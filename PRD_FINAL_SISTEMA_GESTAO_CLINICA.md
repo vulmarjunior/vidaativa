@@ -4,10 +4,10 @@
 
 | Campo | Definição |
 |---|---|
-| Versão | 1.0 |
-| Data | 21 de agosto de 2026 |
+| Versão | 1.1 |
+| Data | 22 de agosto de 2026 |
 | Status | Pronto para descoberta técnica e execução |
-| Produto | Sistema de gestão e site institucional para clínica médica e fisioterapêutica |
+| Produto | Sistema de gestão e site institucional para clínica multidisciplinar |
 | Arquitetura | Single-tenant, exclusiva para a clínica contratante |
 | Stack obrigatória | Next.js, TypeScript, Tailwind CSS, shadcn/ui, Supabase e Vercel |
 
@@ -55,7 +55,10 @@ Construir uma plataforma web exclusiva para centralizar a operação clínica, a
 - atendimento médico;
 - fisioterapia;
 - pilates;
-- fortalecimento.
+- fortalecimento;
+- musculação orientada para idosos;
+- estética não invasiva, incluindo massagens e drenagem linfática;
+- outros serviços futuros configuráveis compatíveis com as capacidades do sistema.
 
 O sistema é o produto principal. O site institucional é acessório e compartilha o mesmo ecossistema técnico, mantendo separação entre área pública e autenticada.
 
@@ -89,11 +92,13 @@ O sistema é o produto principal. O site institucional é acessório e compartil
 - Autenticação, MFA, usuários, perfis e permissões.
 - Pacientes, responsáveis e pagadores.
 - Profissionais, especialidades, serviços, salas e recursos.
+- Catálogo extensível de categorias, serviços e capacidades, sem depender de alteração de código para novos serviços compatíveis.
 - Agenda individual, coletiva e recorrente.
 - Sala de espera e estados do atendimento.
 - Prontuário médico e fisioterapêutico.
 - Anamnese, avaliação, plano e evolução.
-- Pilates, fortalecimento, pacotes, mensalidades e reposições.
+- Pilates, fortalecimento, musculação orientada para idosos, estética não invasiva, pacotes, mensalidades e reposições.
+- Fichas de treino, planos terapêuticos e registro do executado por sessão.
 - Convênios, planos, carteirinhas e contratos.
 - Procedimentos e códigos TUSS.
 - Autorizações, guias, lotes, protocolos e glosas.
@@ -148,6 +153,8 @@ O sistema é o produto principal. O site institucional é acessório e compartil
 | Médico | Consulta, prontuário, prescrições e documentos | Pacientes autorizados |
 | Fisioterapeuta | Avaliação, plano terapêutico e evolução | Pacientes autorizados |
 | Pilates/fortalecimento | Agenda, presença, restrições necessárias e evolução permitida | Limitado à necessidade |
+| Exercício/musculação | Avaliação permitida, ficha de treino, execução e evolução funcional | Pacientes autorizados e limitado à habilitação |
+| Estética | Avaliação específica, procedimento, contraindicações e evolução permitida | Pacientes autorizados e limitado à habilitação |
 | Suporte | Diagnóstico técnico temporário e auditado | Não por padrão |
 
 ### Regras
@@ -212,12 +219,29 @@ O sistema é o produto principal. O site institucional é acessório e compartil
 - **RF-CAD-004 [P0]:** cadastrar salas e recursos exclusivos.
 - **RF-CAD-005 [P0]:** configurar disponibilidade e bloqueios.
 - **RF-CAD-006 [P0]:** manter vigência de preço e regra de repasse.
+- **RF-CAD-007 [P0]:** criar, alterar, categorizar e inativar serviços sem alteração de código.
+- **RF-CAD-008 [P0]:** configurar por serviço modalidade individual ou coletiva, duração, capacidade, intervalo, profissionais, salas, recursos, avaliação prévia, formulários, termos, cobrança e repasse.
+- **RF-CAD-009 [P0]:** associar formulários e termos versionados ao serviço, indicando obrigatoriedade e momento de preenchimento.
+- **RF-CAD-010 [P0]:** indicar se o serviço admite particular, convênio, ambos ou se não é faturável isoladamente.
+- **RF-CAD-011 [P0]:** configurar capacidades assistenciais do serviço, como avaliação, plano, evolução, ficha de treino, registro de sessão e reavaliação.
+- **RF-CAD-012 [P0]:** cadastrar catálogo reutilizável de atividades, exercícios, técnicas e procedimentos, com categoria, parâmetros aplicáveis, recursos e situação.
 
 ### Regras
 
 - **RN-CAD-001:** alteração de preço não modifica cobranças anteriores.
 - **RN-CAD-002:** serviço inativo permanece no histórico.
 - **RN-CAD-003:** duração pode variar por serviço e profissional.
+- **RN-CAD-004:** alteração de serviço, categoria, formulário, termo ou capacidade não modifica retroativamente atendimentos e documentos anteriores.
+- **RN-CAD-005:** categorias de serviço são dados administrativos configuráveis e não enums rígidos no código ou banco.
+- **RN-CAD-006:** novos serviços utilizam capacidades existentes; comportamento assistencial inédito exige análise, atualização do PRD e implementação de capacidade reutilizável.
+- **RN-CAD-007:** habilitação profissional por serviço deve considerar profissão, qualificação e conselho quando aplicável, sem presunção automática do sistema.
+- **RN-CAD-008:** atividades e parâmetros devem ser extensíveis sem criar tabelas isoladas por modalidade.
+
+### Critérios de aceite
+
+- **CA-CAD-001:** administrador cadastra categoria e serviço, associa profissionais, preço, duração, recursos, formulários e cobrança, disponibilizando-o sem nova implantação de código.
+- **CA-CAD-002:** inativar categoria, serviço ou atividade preserva integralmente o histórico.
+- **CA-CAD-003:** uma atividade pode ser reutilizada em planos de modalidades diferentes com parâmetros próprios.
 
 ---
 
@@ -303,6 +327,41 @@ Estados alternativos: `cancelado`, `faltou`, `reagendado`.
 - **RF-PIL-003 [P0]:** registrar programa, progressão, carga, séries e repetições quando aplicável.
 - **RF-PIL-004 [P0]:** registrar intercorrências, dor, limitação e reavaliação.
 
+### 9.4 Musculação orientada e exercícios
+
+- **RF-EXE-001 [P0]:** registrar avaliação funcional, objetivos, restrições e necessidade de liberação ou reavaliação conforme definição do responsável técnico.
+- **RF-EXE-002 [P0]:** montar ficha individual com exercícios, equipamento, séries, repetições, carga, duração, intervalo, frequência, orientação e adaptação.
+- **RF-EXE-003 [P0]:** registrar por sessão atividades previstas e efetivamente realizadas, incluindo carga, execução parcial, suspensão e justificativa.
+- **RF-EXE-004 [P0]:** registrar tolerância, dor, dificuldade, intercorrência e necessidade de revisão.
+- **RF-EXE-005 [P0]:** controlar sessões individuais, coletivas, recorrentes e capacidade por profissional, sala e recurso.
+
+### 9.5 Estética não invasiva
+
+- **RF-EST-001 [P0]:** suportar avaliação e anamnese específicas por serviço estético.
+- **RF-EST-002 [P0]:** registrar objetivo, região, contraindicações, técnica, duração, produtos ou equipamentos, resposta, orientações e intercorrências.
+- **RF-EST-003 [P0]:** exigir avaliação, termo ou consentimento quando configurado para o serviço.
+- **RF-EST-004 [P0]:** separar autorização de imagem clínica de autorização de divulgação.
+- **RF-EST-005 [P0]:** permitir venda avulsa, pacote ou mensalidade conforme configuração.
+
+### 9.6 Planos assistenciais, fichas e tratamentos
+
+- **RF-PLA-001 [P0]:** criar planos assistenciais reutilizáveis para fisioterapia, musculação, fortalecimento, pilates e modalidades futuras.
+- **RF-PLA-002 [P0]:** organizar o plano em seções e itens ordenados, vinculando atividades do catálogo.
+- **RF-PLA-003 [P0]:** configurar por item séries, repetições, carga, unidade, duração, distância, velocidade, intensidade, intervalo, frequência, amplitude, lado, região, equipamento, orientação e critério de progressão conforme aplicável.
+- **RF-PLA-004 [P0]:** criar modelos reutilizáveis, copiáveis e personalizáveis por paciente sem substituir avaliação individual.
+- **RF-PLA-005 [P0]:** versionar planos e fichas, preservando autoria, vigência, conteúdo anterior e motivo da revisão.
+- **RF-PLA-006 [P0]:** relacionar cada sessão à versão do plano utilizada e diferenciar prescrito de efetivamente executado.
+- **RF-PLA-007 [P0]:** permitir parâmetros adicionais validados para atividades futuras sem abandonar relações estruturais de paciente, plano, profissional, atividade e versão.
+
+### Regras de planos
+
+- **RN-PLA-001:** sessão executada sempre referencia a versão do plano vigente utilizada no atendimento.
+- **RN-PLA-002:** alterar um plano nunca modifica retroativamente sessões anteriores.
+- **RN-PLA-003:** modelos não substituem avaliação, prescrição ou decisão individual do profissional habilitado.
+- **RN-PLA-004:** atividade prevista e atividade realizada são registros distintos e rastreáveis.
+- **RN-PLA-005:** recepção e financeiro não acessam conteúdo de planos, fichas ou evolução.
+- **RN-PLA-006:** parâmetros frequentes e pesquisáveis usam estrutura relacional; parâmetros adicionais usam dados validados e versionados, não JSON arbitrário sem esquema.
+
 ### Critérios de aceite clínicos
 
 - **CA-CLI-001:** o conteúdo anterior permanece disponível após retificação.
@@ -321,6 +380,8 @@ Estados alternativos: `cancelado`, `faltou`, `reagendado`.
 - **RF-TER-002 [P0]:** manter autorização de uso de imagem separada e opcional.
 - **RF-TER-003 [P0]:** registrar versão, data, hora e evidência do aceite.
 - **RF-TER-004 [P0]:** permitir revogação quando juridicamente aplicável.
+- **RF-TER-005 [P0]:** associar termos, consentimentos, avaliações e liberações aos serviços e planos que os exigem.
+- **RF-TER-006 [P0]:** manter finalidade de fotografia clínica separada da finalidade de divulgação pública.
 
 O MVP não requer um construtor genérico ilimitado de formulários. Os modelos serão personalizados para a clínica.
 
@@ -452,6 +513,7 @@ Estados: `prevista`, `pendente`, `parcial`, `paga`, `vencida`, `cancelada`, `est
 - **RF-PCT-003 [P0]:** controlar frequência semanal e manutenção da vaga.
 - **RF-PCT-004 [P0]:** aplicar política de falta e reposição.
 - **RF-PCT-005 [P0]:** relacionar sessão original, crédito e reposição.
+- **RF-PCT-006 [P0]:** permitir pacotes com serviços iguais ou combinados e consumir saldo pelo serviço efetivamente realizado.
 
 ### 13.3 Contas a pagar e caixa
 
@@ -526,6 +588,7 @@ Estados: `prevista`, `pendente`, `parcial`, `paga`, `vencida`, `cancelada`, `est
 - **RF-SITE-005 [P0]:** formulário público protegido contra spam.
 - **RF-SITE-006 [P0]:** solicitação de agendamento sujeita à confirmação.
 - **RF-SITE-007 [P0]:** SEO técnico básico, responsividade e acessibilidade.
+- **RF-SITE-008 [P0]:** publicar categorias e serviços liberados pela clínica sem exigir alteração de código para cada novo serviço.
 
 O site não terá CRM, funil comercial ou recursos para vender o sistema a terceiros.
 
@@ -561,6 +624,8 @@ A integração depende do município, regime tributário, API e validação do c
 - **RF-REL-006 [P0]:** pacotes, mensalidades e formas de pagamento.
 - **RF-REL-007 [P0]:** produção, base e repasse por profissional.
 - **RF-REL-008 [P0]:** auditoria de acessos, alterações e exportações.
+- **RF-REL-009 [P0]:** produção, sessões e utilização por categoria e serviço configurável.
+- **RF-REL-010 [P0]:** acompanhamento de pacotes e planos assistenciais sem expor conteúdo clínico a perfis administrativos.
 
 Relatórios devem respeitar as mesmas permissões dos dados de origem. Indicadores gerenciais devem usar dados agregados quando possível.
 
@@ -696,11 +761,13 @@ docs/
 
 ### Pacientes e operação
 
-`patients`, `patient_relationships`, `services`, `service_prices`, `rooms`, `resources`, `availability_rules`, `appointments`, `appointment_recurrences`, `attendance_events`
+`patients`, `patient_relationships`, `service_categories`, `services`, `service_capabilities`, `service_professionals`, `service_prices`, `service_forms`, `service_terms`, `rooms`, `resources`, `service_resources`, `availability_rules`, `appointments`, `appointment_recurrences`, `attendance_events`
 
 ### Clínico
 
-`encounters`, `clinical_records`, `anamneses`, `assessments`, `evolutions`, `treatment_plans`, `prescriptions`, `clinical_documents`, `digital_signatures`, `attachments`, `terms`, `consents`
+`encounters`, `clinical_records`, `anamneses`, `assessments`, `evolutions`, `activity_categories`, `activities`, `activity_parameter_definitions`, `activity_resources`, `care_plans`, `care_plan_versions`, `care_plan_sections`, `care_plan_items`, `care_plan_templates`, `care_plan_template_versions`, `care_plan_template_items`, `care_plan_sessions`, `care_plan_session_items`, `prescriptions`, `clinical_documents`, `digital_signatures`, `attachments`, `terms`, `consents`
+
+Categorias, serviços, atividades e tipos de plano são dados configuráveis. Nomes comerciais ou modalidades atuais não devem gerar tabelas exclusivas. Parâmetros adicionais de atividade podem usar estrutura semiestruturada validada e versionada, mantendo relacionais as entidades, vínculos, autoria e datas relevantes.
 
 ### Convênios
 
@@ -731,6 +798,8 @@ Os nomes são conceituais e podem ser refinados. O agente deve apresentar o ERD 
 ### Etapa 0 — descoberta
 
 - Levantar usuários, profissionais, serviços, salas e unidades.
+- Levantar categorias atuais, capacidades comuns, atividades, exercícios, técnicas e procedimentos sem tratá-los como lista fechada.
+- Reunir fichas de treino, planos terapêuticos, avaliações funcionais, anamneses estéticas, termos e modelos atualmente utilizados.
 - Reunir formulários e documentos atuais.
 - Documentar política de faltas, cancelamentos e reposições.
 - Levantar convênios, contratos, TUSS, guias, portais e glosas.
@@ -753,6 +822,7 @@ Os nomes são conceituais e podem ser refinados. O agente deve apresentar o ERD 
 - Pacientes e relacionamentos.
 - Agenda, recorrência, salas, recursos e fila.
 - Atendimentos e prontuários.
+- Catálogo de atividades, planos assistenciais, fichas de treino e registro do executado por sessão.
 - Formulários, avaliações, evoluções e anexos.
 - Termos e consentimentos.
 - Pacotes, mensalidades e reposições.
@@ -842,6 +912,11 @@ O agente não deve inventar os itens abaixo.
 - Razão social, nome fantasia e unidades.
 - Profissionais, especialidades e conselhos.
 - Serviços, durações, preços, salas e recursos.
+- Modalidades individuais/coletivas, capacidades configuráveis e critérios para particular ou convênio.
+- Profissionais responsáveis por musculação para idosos e estética, respectivas habilitações e responsabilidades técnicas.
+- Equipamentos e insumos usados em musculação, fortalecimento, fisioterapia, pilates e estética.
+- Fichas de treino, planos de tratamento, parâmetros, modelos e periodicidade de reavaliação.
+- Regras para avaliação prévia, contraindicações, liberação, fotografias clínicas e consentimentos.
 - Capacidade de turmas.
 - Formulários e modelos clínicos.
 
@@ -919,6 +994,10 @@ As referências regulatórias devem ser verificadas novamente antes de cada inte
 | DEC-008 | NFS-e não integra o MVP, mas integra a versão final. |
 | DEC-009 | A chave privada e os fatores de autenticação da médica nunca serão armazenados. |
 | DEC-010 | Registros clínicos finalizados e documentos assinados são imutáveis. |
+| DEC-011 | Categorias e serviços são configuráveis; a lista atual não limita serviços futuros da clínica. |
+| DEC-012 | Novos serviços compatíveis usam capacidades existentes sem alteração de código; comportamento inédito exige capacidade reutilizável e revisão do PRD. |
+| DEC-013 | Fisioterapia, musculação, fortalecimento e modalidades futuras compartilham um núcleo versionado de planos, fichas, atividades e execução por sessão. |
+| DEC-014 | Estética não invasiva, incluindo massagens e drenagem linfática, integra o escopo operacional do MVP. |
 
 ---
 
@@ -932,4 +1011,3 @@ As referências regulatórias devem ser verificadas novamente antes de cada inte
 | Financeiro/faturamento | A definir | Pendente |
 | Responsável técnico | A definir | Pendente |
 | Jurídico/LGPD | A definir | Revisão antes da produção |
-

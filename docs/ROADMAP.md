@@ -21,6 +21,7 @@ Estado: em andamento.
 - [x] site e cadastro institucional inicial;
 - [ ] conexão e validação do Supabase remoto;
 - [ ] profissionais, especialidades, serviços, salas e recursos;
+- [ ] categorias, capacidades e catálogo extensível de atividades;
 - [ ] pacientes, responsáveis e pagadores;
 - [ ] usuários, convites e administração de acessos.
 
@@ -31,7 +32,9 @@ Estado: não iniciada.
 - agenda e jornada do atendimento;
 - prontuário médico;
 - prontuário fisioterapêutico;
-- pilates e fortalecimento;
+- pilates, fortalecimento e musculação orientada para idosos;
+- estética não invasiva;
+- planos assistenciais, fichas de treino e execução por sessão;
 - formulários, termos e consentimentos.
 
 ## Etapa 3 — Convênios e TISS

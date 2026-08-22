@@ -1,6 +1,6 @@
 # Estado atual do projeto
 
-Atualizado em: 2026-08-21  
+Atualizado em: 2026-08-22
 Versão atual: 0.1.0 — fundação  
 Fase do PRD: Etapa 1 — fundação e cadastros estruturantes  
 Tarefa ativa: `TASK-002-profissionais-servicos-recursos.md`  
@@ -9,6 +9,8 @@ Tarefa ativa: `TASK-002-profissionais-servicos-recursos.md`
 ## Resumo executivo
 
 A fundação visual e técnica está implementada e compilando. O projeto Supabase `Vida_Ativa` está vinculado, as migrations iniciais foram aplicadas e o primeiro administrador está ativo. O login foi validado funcionalmente pelo usuário em 2026-08-21.
+
+Em 2026-08-22, a descoberta ampliou o escopo para estética não invasiva e musculação orientada para idosos. O PRD passou a exigir catálogo extensível de serviços e núcleo versionado de planos assistenciais, fichas de treino, atividades e execução por sessão. Nenhuma migration de domínio foi criada antes dessa revisão.
 
 ## Estado funcional
 
@@ -49,8 +51,8 @@ Em 2026-08-21:
 
 ## Próxima ação recomendada
 
-Continuar `TASK-002`: modelar profissionais, especialidades, serviços, salas e recursos, com migrations incrementais, autorização e auditoria. O Supabase remoto e o primeiro acesso administrativo já estão funcionais.
+Continuar `TASK-002`: desenhar e revisar o ERD extensível de profissionais, categorias, serviços, capacidades, atividades, salas e recursos. O desenho deve reservar vínculos para planos assistenciais futuros sem implementar prematuramente todo o módulo clínico.
 
 ## Onde continuar
 
-Leia `docs/tasks/active/TASK-002-profissionais-servicos-recursos.md` e comece pela confirmação do modelo conceitual contra as seções 4, 5 e 7 do PRD.
+Leia `docs/tasks/active/TASK-002-profissionais-servicos-recursos.md`, as seções 4, 7, 9 e 20 do PRD e `docs/decisions/ADR-002-catalogo-extensivel-e-planos.md`. Produza o ERD proposto antes de criar a próxima migration.

@@ -15,9 +15,12 @@ Implementar os cadastros estruturantes necessários para agenda, prontuários e 
 - profissionais e situação ativa/inativa;
 - dados de conselho profissional e UF;
 - especialidades;
-- serviços oferecidos, duração e situação;
+- categorias e serviços configuráveis, capacidades, duração e situação;
+- catálogo reutilizável de atividades, exercícios, técnicas e procedimentos;
 - salas e recursos/equipamentos;
 - relações entre profissionais, especialidades e serviços;
+- associações de serviços com profissionais, recursos, formulários, termos e formas de cobrança;
+- desenho dos vínculos necessários para futuros planos assistenciais e fichas, sem implementar todo o prontuário nesta tarefa;
 - autorização, RLS e auditoria;
 - interfaces administrativas com busca e estados de interface.
 
@@ -27,6 +30,7 @@ Implementar os cadastros estruturantes necessários para agenda, prontuários e 
 - cálculo ou pagamento de repasses;
 - assinatura digital;
 - execução do atendimento clínico;
+- CRUD completo de planos, fichas e sessões executadas;
 - regras específicas de cobrança dos convênios.
 
 ## Questões de descoberta
@@ -34,6 +38,10 @@ Implementar os cadastros estruturantes necessários para agenda, prontuários e 
 - quais profissões e conselhos existem atualmente;
 - se um profissional pode possuir mais de um conselho/especialidade;
 - serviços reais, durações e necessidade de preparação/intervalo;
+- fichas de treino e tratamento atualmente utilizadas;
+- atividades e parâmetros comuns de fisioterapia, musculação, fortalecimento e pilates;
+- profissionais habilitados e fluxo da estética não invasiva;
+- profissional responsável e funcionamento da musculação orientada para idosos;
 - salas e equipamentos compartilháveis;
 - quais dados financeiros podem ser vistos por direção, financeiro e profissional.
 
@@ -42,6 +50,8 @@ Na ausência de resposta, modele de forma normalizada e configurável, sem inven
 ## Critérios de aceite
 
 - [ ] modelo de dados documentado;
+- [ ] categorias e serviços podem ser acrescentados sem enum rígido ou nova tabela por modalidade;
+- [ ] modelo reserva relações estáveis para atividades e planos versionados futuros;
 - [ ] migrations incrementais criadas, sem alterar a migration inicial;
 - [ ] integridade, índices e RLS implementados;
 - [ ] matriz de autorização documentada e testada;
@@ -55,7 +65,9 @@ Na ausência de resposta, modele de forma normalizada e configurável, sem inven
 
 ## Progresso
 
+- [x] consolidar no PRD a extensibilidade de serviços, estética, musculação e planos assistenciais;
 - [ ] confirmar modelo conceitual com o PRD;
+- [ ] produzir e revisar ERD antes da migration;
 - [ ] criar migration;
 - [ ] criar consultas e ações de servidor;
 - [ ] implementar profissionais e especialidades;
@@ -77,7 +89,7 @@ O Supabase remoto está conectado e apto a receber migrations. Respostas da desc
 
 ## Onde continuar
 
-Ler as seções 4, 5, 7 e 20 do PRD, inspecionar as migrations já aplicadas, propor o esquema relacional e criar uma nova migration incremental. Não modificar migrations existentes.
+Ler as seções 4, 7, 9 e 20 do PRD e o ADR-002, inspecionar as migrations aplicadas e produzir o ERD. Separar o que pertence ao cadastro estrutural desta tarefa do que será implementado futuramente em planos clínicos. Somente após revisão do desenho, criar migration incremental; não modificar migrations existentes.
 
 ## Validações
 
