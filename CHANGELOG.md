@@ -14,6 +14,13 @@ As mudanças relevantes deste projeto são registradas aqui. O formato segue ver
 - PRD ampliado para estética não invasiva e musculação orientada para idosos.
 - Catálogo extensível de serviços, capacidades e atividades definido.
 - Núcleo conceitual versionado para planos terapêuticos, fichas de treino e execução por sessão.
+- ERD e migration incremental para profissionais, serviços, atividades, salas, recursos, formulários e termos.
+- Interface administrativa inicial para profissionais, categorias de serviço, serviços, salas e recursos.
+- Proteção efetiva das rotas internas pelo `proxy.ts` do Next.js 16, com redirecionamento de usuários sem sessão.
+- Modelo regulatório versionado para catálogos oficiais de especialidades, pré-requisitos e registros de RQE, separado das qualificações acadêmicas.
+- Catálogos oficiais CFM/CME e COFFITO importados com fontes, vigências, códigos aplicáveis e pré-requisitos.
+- Ficha profissional com catálogo filtrado por profissão e fluxo administrativo de registro e conferência do RQE.
+- Consulta de especialidades em gaveta lateral com busca e filtros, substituindo a tabela extensa na página estrutural.
 
 ## [0.1.0] — 2026-08-21
 

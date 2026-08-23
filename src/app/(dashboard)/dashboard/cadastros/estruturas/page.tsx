@@ -1,0 +1,37 @@
+import Link from "next/link";
+import { ArrowLeft, BadgeCheck, Dumbbell, GraduationCap, Stethoscope } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { getStructuralCatalogData, type CatalogItem } from "@/lib/catalog/queries";
+import { createActivity, createActivityCategory, createCouncil, createProfession, createQualification, toggleCatalogItem } from "../actions";
+import { SpecialtyCatalogDrawer } from "./specialty-catalog-drawer";
+
+export default async function StructuresPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
+  const [data, params] = await Promise.all([getStructuralCatalogData(), searchParams]);
+  const canManage = data.role === "admin";
+  return <div className="mx-auto max-w-7xl space-y-6">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-sm font-medium text-primary">Cadastros estruturantes</p><h1 className="text-3xl font-semibold tracking-tight">Habilitações e atividades</h1><p className="mt-1 text-muted-foreground">Vocabulários reutilizáveis, sem dados pessoais de profissionais.</p></div><Button asChild variant="outline"><Link href="/dashboard/cadastros"><ArrowLeft />Voltar aos cadastros</Link></Button></div>
+    {params.status === "saved" && <Alert><AlertTitle>Cadastro atualizado</AlertTitle><AlertDescription>A alteração foi salva.</AlertDescription></Alert>}
+    {params.status === "invalid" && <Alert variant="destructive"><AlertTitle>Dados inválidos</AlertTitle><AlertDescription>Revise os campos informados.</AlertDescription></Alert>}
+    {params.status === "error" && <Alert variant="destructive"><AlertTitle>Não foi possível salvar</AlertTitle><AlertDescription>Verifique duplicidade ou regras de integridade.</AlertDescription></Alert>}
+    {data.error && <Alert variant="destructive"><AlertTitle>Dados indisponíveis</AlertTitle><AlertDescription>{data.error}</AlertDescription></Alert>}
+    <div className="grid gap-5 xl:grid-cols-2">
+      <ReferenceCard title="Profissões" description="Formação profissional principal." icon={Stethoscope} items={data.professions} table="professions" canManage={canManage}><SimpleForm action={createProfession} label="Nome da profissão" disabled={!canManage} /></ReferenceCard>
+      <ReferenceCard title="Conselhos profissionais" description="Órgãos de registro quando aplicáveis." icon={BadgeCheck} items={data.councils} table="professional_councils" canManage={canManage} details={(item) => item.acronym}><form action={createCouncil} className="grid gap-3 sm:grid-cols-[1fr_8rem_auto]"><Field name="name" label="Nome do conselho" /><Field name="acronym" label="Sigla" /><Submit disabled={!canManage} /></form></ReferenceCard>
+      <SpecialtyCatalogDrawer items={data.specialties} />
+      <ReferenceCard title="Qualificações" description="Cursos, certificações e habilitações adicionais." icon={GraduationCap} items={data.qualifications} table="qualifications" canManage={canManage} details={(item) => item.issuer ?? "Emissor não informado"}><form action={createQualification} className="grid gap-3 sm:grid-cols-[1fr_1fr_auto]"><Field name="name" label="Qualificação" /><Field name="issuer" label="Instituição emissora" required={false} /><Submit disabled={!canManage} /></form></ReferenceCard>
+      <ReferenceCard title="Categorias de atividades" description="Agrupa exercícios, técnicas e procedimentos." icon={Dumbbell} items={data.activityCategories} table="activity_categories" canManage={canManage}><SimpleForm action={createActivityCategory} label="Nome da categoria" disabled={!canManage} /></ReferenceCard>
+      <ReferenceCard title="Atividades" description="Catálogo reutilizável nos futuros planos assistenciais." icon={Dumbbell} items={data.activities} table="activities" canManage={canManage} details={(item) => item.activity_categories?.name ?? "Sem categoria"}><form action={createActivity} className="grid gap-3 sm:grid-cols-2"><Field name="name" label="Nome da atividade" /><div className="space-y-2"><Label htmlFor="activityCategoryId">Categoria</Label><select id="activityCategoryId" name="categoryId" required className="h-9 w-full rounded-md border bg-transparent px-3 text-sm"><option value="">Selecione</option>{data.activityCategories.filter((item) => item.active).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></div><div className="sm:col-span-2"><Field name="description" label="Descrição" required={false} /></div><Submit disabled={!canManage || data.activityCategories.length === 0} /></form></ReferenceCard>
+    </div>
+  </div>;
+}
+
+function ReferenceCard<T extends CatalogItem>({ title, description, icon: Icon, items, table, canManage, details, locked, children }: { title: string; description: string; icon: typeof Stethoscope; items: T[]; table: string; canManage: boolean; details?: (item: T) => React.ReactNode; locked?: (item: T) => boolean; children?: React.ReactNode }) { return <Card><CardHeader><div className="flex items-center gap-2"><Icon className="size-5 text-primary" /><CardTitle>{title}</CardTitle></div><CardDescription>{description}</CardDescription></CardHeader><CardContent className="space-y-5">{children}<div className="rounded-lg border"><Table><TableHeader><TableRow><TableHead>Nome</TableHead><TableHead>Detalhes</TableHead><TableHead className="w-24">Situação</TableHead></TableRow></TableHeader><TableBody>{items.length === 0 ? <TableRow><TableCell colSpan={3} className="h-24 text-center text-muted-foreground">Nenhum cadastro encontrado.</TableCell></TableRow> : items.map((item) => <TableRow key={item.id}><TableCell className="font-medium">{item.name}</TableCell><TableCell className="text-muted-foreground">{details?.(item) ?? "—"}</TableCell><TableCell>{locked?.(item) ? <Badge variant={item.active ? "secondary" : "outline"}>{item.active ? "Oficial" : "Histórico"}</Badge> : <form action={toggleCatalogItem}><input type="hidden" name="table" value={table} /><input type="hidden" name="id" value={item.id} /><input type="hidden" name="active" value={String(item.active)} /><input type="hidden" name="returnTo" value="/dashboard/cadastros/estruturas" /><Button type="submit" size="sm" variant="ghost" disabled={!canManage}><Badge variant={item.active ? "secondary" : "outline"}>{item.active ? "Ativo" : "Inativo"}</Badge></Button></form>}</TableCell></TableRow>)}</TableBody></Table></div></CardContent></Card>; }
+function SimpleForm({ action, label, disabled }: { action: (formData: FormData) => Promise<void>; label: string; disabled: boolean }) { return <form action={action} className="grid gap-3 sm:grid-cols-[1fr_auto]"><Field name="name" label={label} /><Submit disabled={disabled} /></form>; }
+function Field({ name, label, required = true }: { name: string; label: string; required?: boolean }) { return <div className="space-y-2"><Label htmlFor={name}>{label}</Label><Input id={name} name={name} required={required} /></div>; }
+function Submit({ disabled }: { disabled: boolean }) { return <div className="flex items-end"><Button type="submit" disabled={disabled}>Adicionar</Button></div>; }

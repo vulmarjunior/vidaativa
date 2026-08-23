@@ -59,20 +59,23 @@ Na ausência de resposta, modele de forma normalizada e configurável, sem inven
 - [ ] CRUD administrativo funcional e responsivo;
 - [ ] exclusão física impedida quando houver risco histórico;
 - [ ] estados de carregamento, vazio, erro e permissão tratados;
-- [ ] lint, TypeScript e build aprovados;
+- [x] lint, TypeScript e build aprovados;
 - [ ] fluxo verificado no navegador;
-- [ ] documentação e registros atualizados.
+- [x] documentação e registros atualizados.
 
 ## Progresso
 
 - [x] consolidar no PRD a extensibilidade de serviços, estética, musculação e planos assistenciais;
-- [ ] confirmar modelo conceitual com o PRD;
-- [ ] produzir e revisar ERD antes da migration;
-- [ ] criar migration;
-- [ ] criar consultas e ações de servidor;
-- [ ] implementar profissionais e especialidades;
-- [ ] implementar serviços;
-- [ ] implementar salas e recursos;
+- [x] confirmar modelo conceitual com o PRD;
+- [x] produzir e revisar ERD antes da migration;
+- [x] criar migration;
+- [x] criar consultas e ações de servidor;
+- [x] implementar profissionais e especialidades — ficha completa implementada; preenchimento aguarda dados reais;
+- [x] implementar serviços — categoria, serviço, capacidades, modalidades, cobrança, preços, salas, recursos e habilitação profissional disponíveis;
+- [x] implementar salas e recursos;
+- [x] modelar catálogo oficial versionado de especialidades e registro separado de RQE;
+- [x] importar e versionar catálogos oficiais CFM/CME e COFFITO;
+- [x] integrar profissão, pré-requisitos e fluxo de verificação de RQE à ficha profissional;
 - [ ] testar autorização e auditoria;
 - [ ] verificar interface;
 
@@ -85,12 +88,71 @@ Na ausência de resposta, modele de forma normalizada e configurável, sem inven
 
 ## Dependência externa
 
-O Supabase remoto está conectado e apto a receber migrations. Respostas da descoberta operacional ainda serão necessárias antes de consolidar regras específicas de vínculos, serviços, recursos e remuneração.
+O Supabase remoto está vinculado e contém as seis migrations, incluindo o modelo regulatório, a importação dos catálogos e a normalização das profissões canônicas. Respostas da descoberta operacional ainda serão necessárias antes de consolidar regras específicas de vínculos, serviços, recursos e remuneração.
 
 ## Onde continuar
 
-Ler as seções 4, 7, 9 e 20 do PRD e o ADR-002, inspecionar as migrations aplicadas e produzir o ERD. Separar o que pertence ao cadastro estrutural desta tarefa do que será implementado futuramente em planos clínicos. Somente após revisão do desenho, criar migration incremental; não modificar migrations existentes.
+Retomar nesta ordem:
+
+1. não alterar `sge-mordomo-db` (porta 5432); usar apenas o Supabase remoto ou o ambiente isolado `clinica-vida-ativa-task002-validation` (Postgres na porta 54322);
+2. disponibilizar contas individuais de teste para recepção, financeiro, médico e fisioterapeuta; completar no navegador a matriz de autorização e confirmar os eventos correspondentes em `audit_events`;
+3. quando houver dados reais da profissional, cadastrar profissão, conselho, UF e número de registro e validar visualmente a associação de especialidade/área, pré-requisitos e RQE, sem inventar informações;
+4. concluir a revisão de acessibilidade e dos estados de carregamento, vazio, erro e permissão; a checagem responsiva básica em 390 px já passou nas três rotas administrativas principais;
+5. obter da clínica os modelos reais e definir o escopo restante das interfaces de formulários e termos;
+6. repetir reconstrução, RLS e auditoria no ambiente isolado quando o Docker Desktop estiver disponível e executar a validação final antes de encerrar a tarefa.
+
+Catálogos oficiais só devem ser atualizados por nova migration incremental, vinculada a release e fonte oficial conferida. Não presumir cobrança, preço, remuneração ou habilitação profissional para o serviço `Avaliação fisioterapêutica`.
+
+## Pendências ao encerrar 2026-08-23
+
+- dados reais da profissional para validar a ficha dinâmica e o fluxo completo de RQE;
+- contas individuais de teste para recepção, financeiro, médico e fisioterapeuta;
+- testes funcionais por perfil não administrativo e conferência da auditoria correspondente;
+- Docker Desktop disponível para repetir os testes no ambiente isolado;
+- revisão de acessibilidade e estados alternativos; responsividade básica das rotas principais verificada em 390 px;
+- decisão e implementação das interfaces de formulários e termos;
+- proteção contra senhas vazadas no Supabase Auth, condicionada à disponibilidade do plano.
 
 ## Validações
 
-Ainda não executadas para esta tarefa.
+- em 2026-08-23, `/dashboard/cadastros`, `/dashboard/cadastros/estruturas` e `/dashboard/cadastros/servicos/[id]` carregaram autenticadas como administrador, sem alerta funcional; a mensagem transitória de indisponibilidade não se repetiu e nenhuma correção foi necessária;
+- em 2026-08-23, as três rotas administrativas principais foram verificadas em viewport de 390 px, sem rolagem horizontal;
+- em 2026-08-23, `npm run lint`, `npm run typecheck` e `npm run build` foram aprovados;
+- em 2026-08-23, o Docker Desktop estava indisponível e não havia contas não administrativas na sessão; por isso, os testes finais por perfil e a repetição local de RLS/auditoria permanecem pendentes;
+
+- `npx supabase start`: aprovado; criou o ambiente isolado `clinica-vida-ativa-task002-validation` e aplicou as três migrations sem erros.
+- `npx supabase db lint --local --schema public --level warning --fail-on error`: aprovado, sem erros de esquema.
+- `npx supabase migration list --local`: aprovado; as três migrations locais constam como aplicadas no ambiente isolado.
+- testes RLS via `psql`: aprovados para escrita administrativa com auditoria, leitura da recepção, bloqueio de escrita da recepção e ocultação de preços para médico; dados fictícios removidos.
+- `npx supabase db advisors --local --type all --level warn --fail-on error`: aprovado, sem alertas.
+- autenticação da CLI Supabase: concluída pelo fluxo oficial com código de verificação.
+- `npx supabase db push --linked --dry-run --skip-vault`: aprovado; indicou somente a migration da TASK-002.
+- `npx supabase db push --linked --skip-vault --yes`: aprovado; migration aplicada ao Supabase remoto.
+- `npx supabase migration list --linked`: aprovado; migrations local e remota coincidem.
+- `npx supabase db lint --linked --schema public --level warning --fail-on error`: aprovado sem erros.
+- `npx supabase db advisors --linked --type all --level warn --fail-on error`: apenas o alerta já conhecido de proteção contra senhas vazadas desabilitada.
+- navegador sem sessão: `/dashboard/cadastros` redireciona para `/login?redirect=/dashboard/cadastros`, sem overlay ou erros de console.
+- navegador com administrador: `/dashboard/cadastros`, `/dashboard/cadastros/estruturas` e `/dashboard/cadastros/servicos/[id]` carregaram sem overlay ou erros de console.
+- associações verificadas no remoto: capacidade `Avaliação`, modalidade `Individual`, `Sala de Fisioterapia` e `Maca de fisioterapia` no serviço `Avaliação fisioterapêutica`.
+- `npm run lint`, `npm run typecheck` e `npm run build`: aprovados após as novas rotas e ações.
+- ficha profissional: lint, TypeScript e build aprovados; tela principal verificada autenticada sem erros. A rota dinâmica não recebeu dados fictícios no remoto apenas para teste.
+- migration regulatória `20260822210413_official_specialty_catalog_and_rqe.sql` criada pela CLI oficial após aprovação do ERD incremental.
+- `npx supabase db reset --local --no-seed`: aprovado no ambiente isolado; as quatro migrations foram aplicadas do zero sem acessar `sge-mordomo-db`.
+- testes transacionais de integridade/RLS: aprovados para RQE vinculado, rejeição de profissão incompatível, leitura da recepção e bloqueio de escrita; rollback executado.
+- testes transacionais de auditoria: eventos de release regulatório e RQE confirmados; rollback executado.
+- lint e advisors locais após a migration regulatória: aprovados, sem alertas.
+- tentativas iniciais do dry-run remoto pararam antes de acessar o banco com `401 Unauthorized`; a CLI foi autenticada novamente e a validação concluída depois.
+- `npm run lint` e `npm run typecheck`: aprovados após a migration e documentação regulatória.
+- `npm run build`: aprovado fora do sandbox; a tentativa interna compilou, mas o processo auxiliar foi bloqueado por `spawn EPERM`.
+- nova autenticação da CLI Supabase: concluída pelo fluxo oficial de verificação.
+- dry-run remoto regulatório: aprovado; listou somente `20260822210413_official_specialty_catalog_and_rqe.sql`, sem seeds ou outras alterações.
+- push remoto regulatório: aprovado; a quarta migration foi aplicada com sucesso.
+- histórico remoto: aprovado; as quatro versões locais e remotas estão alinhadas.
+- lint remoto após a migration regulatória: aprovado, sem erros de schema.
+- advisors remotos: somente o aviso já conhecido `auth_leaked_password_protection`.
+- migration `20260822214905_import_official_specialty_catalogs.sql`: aplicada local e remotamente; confirmou Medicina 55+62, Fisioterapia 16+7 e 182 pré-requisitos.
+- migration `20260822220138_normalize_profession_catalog_links.sql`: aplicada local e remotamente após ERD de reconciliação aprovado; releases transferidos para `Médico` e `Fisioterapeuta`, duplicatas inativadas e nome do CREFITO corrigido.
+- histórico remoto: seis migrations locais e remotas alinhadas; lint remoto sem erros após a normalização.
+- tela `/dashboard/cadastros/estruturas`: verificada autenticada com catálogo controlado, badges oficiais e releases CFM/COFFITO, sem alerta de carregamento.
+- catálogo oficial reorganizado em resumo e gaveta lateral; busca por `Gerontologia` e ocultação da lista longa verificadas no navegador.
+- ficha profissional regulatória: lint, TypeScript e build aprovados; fluxo dinâmico de RQE aguarda dados reais para verificação visual.
