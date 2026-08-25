@@ -79,8 +79,11 @@ Na ausência de resposta, modele de forma normalizada e configurável, sem inven
 - [ ] testar autorização e auditoria;
 - [x] permitir múltiplos papéis ativos por conta, com migração do papel existente, RLS e auditoria;
 - [x] implementar interface administrativa de usuários e convites, incluindo vínculo opcional ao profissional;
+- [x] compactar a administração de usuários com busca, filtros, paginação visual, edição em painel lateral e descrições acessíveis dos papéis;
+- [x] distinguir convite pendente, conta ativa e conta inativa e limitar exclusão ao cancelamento auditado de convite nunca confirmado;
 - [x] documentar espaços de trabalho por capacidades e implementar navegação dinâmica para múltiplos papéis;
 - [ ] verificar interface;
+- [x] adicionar estados de rota para carregamento, erro inesperado com nova tentativa e cadastro dinâmico não encontrado;
 
 ## Arquivos previstos
 
@@ -104,6 +107,10 @@ Retomar nesta ordem:
 5. obter da clínica os modelos reais e definir o escopo restante das interfaces de formulários e termos;
 6. repetir reconstrução, RLS e auditoria no ambiente isolado quando o Docker Desktop estiver disponível e executar a validação final antes de encerrar a tarefa.
 
+Em 2026-08-25, os estados de rota de carregamento, erro inesperado e cadastro não encontrado foram implementados no segmento de cadastros. Continuar a revisão pelos formulários, ações sensíveis e navegação por teclado; a validação visual desses novos estados ainda depende de ambiente configurado e navegador autenticado.
+
+Também em 2026-08-25, a administração de usuários foi reorganizada em listagem compacta com busca e filtros, papéis resumidos, edição em `Sheet` e confirmação de cancelamento em `AlertDialog`. Contas confirmadas preservam histórico e só podem ser inativadas; apenas convites sem confirmação e sem login podem ser cancelados. Após nova autenticação da CLI, a Edge Function atualizada foi publicada no remoto em versão 2, estado `ACTIVE` e com verificação JWT habilitada.
+
 Catálogos oficiais só devem ser atualizados por nova migration incremental, vinculada a release e fonte oficial conferida. Não presumir cobrança, preço, remuneração ou habilitação profissional para o serviço `Avaliação fisioterapêutica`.
 
 ## Pendências ao encerrar 2026-08-24
@@ -118,6 +125,14 @@ Catálogos oficiais só devem ser atualizados por nova migration incremental, vi
 - validar amanhã a navegação modular com contas individuais não administrativas e confirmar a união de módulos em uma conta com dois papéis.
 
 ## Validações
+
+- em 2026-08-25, `npm run lint` e `npm run typecheck` passaram após a inclusão dos estados alternativos;
+- em 2026-08-25, `npm run build` compilou dentro do sandbox, mas o processo auxiliar foi bloqueado por `spawn EPERM`; repetido fora do sandbox, o build de produção passou por completo com Next.js 16.3.2;
+- em 2026-08-25, não havia `.env*`, contas de teste acessíveis ou comando Docker disponível; por isso a matriz funcional por perfil e a reconstrução isolada não foram executadas;
+- em 2026-08-25, `npm run lint`, `npm run typecheck` e `npm run build` passaram após a reorganização da administração de usuários; o build precisou ser repetido fora do sandbox após `spawn EPERM`;
+- em 2026-08-25, a tela autenticada foi validada no Chrome em desktop e viewport de 390 px, sem rolagem horizontal ou overlay; busca, filtros, painel de edição e confirmação de cancelamento foram exercitados sem submeter alterações;
+- em 2026-08-25, uma primeira publicação de `admin-users` foi bloqueada com `403`; após autenticação com conta autorizada, o deploy passou e a função foi confirmada em versão 2, estado `ACTIVE` e `verify_jwt = true`;
+- em 2026-08-25, o usuário confirmou que o cancelamento de convite pendente funcionou pela interface no ambiente remoto; a conferência isolada do evento `cancel_invite` em `audit_events` continua pendente de registro explícito;
 
 - em 2026-08-24, a migration de múltiplos papéis reconstruiu as sete migrations desde zero no ambiente isolado;
 - em 2026-08-24, testes transacionais confirmaram dois papéis ativos na mesma conta, união de permissões, revogação parcial sem perda do papel restante e eventos `assign`/`revoke` em `audit_events`; rollback executado;

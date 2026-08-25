@@ -1,6 +1,6 @@
 # Estado atual do projeto
 
-Atualizado em: 2026-08-24
+Atualizado em: 2026-08-25
 Versão atual: 0.1.0 — fundação  
 Fase do PRD: Etapa 1 — fundação e cadastros estruturantes  
 Tarefa ativa: `TASK-002-profissionais-servicos-recursos.md`  
@@ -26,6 +26,10 @@ A interface de administração de usuários está disponível com convites indiv
 
 A arquitetura de navegação foi reorganizada em espaços de trabalho orientados por capacidades. O menu e a página inicial agora combinam os módulos dos papéis ativos, enquanto páginas dinâmicas também verificam acesso no servidor. A matriz inicial e a separação entre navegação, autorização de ações e RLS estão registradas na ADR-004.
 
+Os cadastros estruturantes agora possuem estados de rota para carregamento, exceção inesperada com nova tentativa e registro dinâmico não encontrado. Lint, TypeScript e build de produção passaram com Next.js 16.3.2.
+
+A administração de usuários agora usa listagem compacta, busca e filtros, edição em painel lateral e papéis com descrições acessíveis sob demanda. Convites pendentes são distinguidos de contas ativas; contas confirmadas são inativadas com preservação histórica, enquanto convites nunca confirmados podem ser cancelados por fluxo protegido e auditado. A interface foi validada localmente e a Edge Function atualizada está publicada no remoto em versão 2, estado `ACTIVE` e com JWT obrigatório.
+
 ## Estado funcional
 
 | Área | Estado | Observação |
@@ -44,6 +48,12 @@ A arquitetura de navegação foi reorganizada em espaços de trabalho orientados
 | Auditoria | Fundação no banco | Sem tela funcional de consulta |
 
 ## Validação mais recente
+
+Em 2026-08-25, foram adicionados `loading.tsx`, `error.tsx` e `not-found.tsx` ao segmento de cadastros. `npm run lint`, `npm run typecheck` e o build de produção passaram. A validação visual permanece pendente porque o clone ainda não possui configuração local, contas de teste acessíveis ou Docker disponível.
+
+Ainda em 2026-08-25, a nova administração compacta de usuários passou em lint, TypeScript e build. No Chrome autenticado, busca, filtros, painel lateral e confirmação de cancelamento foram verificados em desktop e 390 px, sem overlay ou rolagem horizontal. Nenhuma conta foi alterada. Após nova autenticação da CLI, a Edge Function foi publicada e confirmada ativa com JWT obrigatório.
+
+O cancelamento remoto de convite pendente foi confirmado funcionalmente pelo usuário em 2026-08-25. Resta conferir e registrar explicitamente o evento correspondente em `audit_events`.
 
 Em 2026-08-24, a navegação modular passou em lint, TypeScript e build. No navegador autenticado como administrador, foram exibidos apenas Início, Auditoria e Administração do sistema; módulos clínicos e financeiros ficaram ocultos. O acesso direto a Prontuários sem papel médico redirecionou com aviso de falta de permissão e não houve erro no console. A validação completa com papéis não administrativos continua pendente.
 
@@ -68,10 +78,11 @@ Em 2026-08-23:
 - Concluir acessibilidade e estados de carregamento, vazio, erro e permissão; responsividade básica já verificada.
 - Definir o escopo das interfaces de formulários e termos.
 - Validar a interface de usuários autenticada no navegador e criar as contas individuais de teste da matriz de autorização.
+- Validar o cancelamento auditado de um convite estritamente fictício usando a Edge Function `admin-users` versão 2 já publicada.
 
 ## Próxima ação recomendada
 
-Continuar `TASK-002`: obter contas de teste não administrativas e validar autorização/auditoria por perfil. Em paralelo, validar a ficha de especialidades e RQE quando os dados reais da profissional estiverem disponíveis; depois concluir acessibilidade, estados alternativos e formulários/termos.
+Continuar `TASK-002`: validar o cancelamento auditado de um convite fictício com `admin-users` versão 2. Depois, usar contas não administrativas para concluir autorização/auditoria por perfil. A ficha de especialidades e RQE continua aguardando dados reais da profissional.
 
 ## Onde continuar
 

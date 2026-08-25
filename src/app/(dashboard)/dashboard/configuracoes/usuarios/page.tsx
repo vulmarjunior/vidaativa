@@ -1,35 +1,29 @@
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { KeyRound, ShieldCheck, UserPlus, UsersRound } from "lucide-react";
+import { ShieldCheck, UserPlus } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getUserAdministrationData } from "@/lib/users/queries";
-import { APP_ROLES, ROLE_DESCRIPTIONS, ROLE_LABELS, type AppRole } from "@/lib/users/types";
-import { inviteUser, updateUserAccess } from "./actions";
+import { inviteUser } from "./actions";
+import { ProfessionalSelect, RoleSelector, UsersDirectory } from "./users-administration";
 
 export default async function UsersPage({ searchParams }: { searchParams: Promise<{ status?: string; message?: string }> }) {
   const [data, params] = await Promise.all([getUserAdministrationData(), searchParams]);
   return <div className="mx-auto max-w-7xl space-y-6">
     <div><p className="text-sm font-medium text-primary">Configurações de acesso</p><h1 className="text-3xl font-semibold tracking-tight">Usuários e papéis</h1><p className="mt-1 text-muted-foreground">Contas individuais, vínculos profissionais e permissões acumuláveis.</p></div>
-    {params.status === "invited" && <Alert><UserPlus className="size-4" /><AlertTitle>Convite enviado</AlertTitle><AlertDescription>O usuário receberá um link para definir a própria senha.</AlertDescription></Alert>}
-    {params.status === "saved" && <Alert><ShieldCheck className="size-4" /><AlertTitle>Acesso atualizado</AlertTitle><AlertDescription>Perfis e situação foram salvos e registrados na auditoria.</AlertDescription></Alert>}
+    {params.status === "invited" && <Alert><UserPlus /><AlertTitle>Convite enviado</AlertTitle><AlertDescription>O usuário receberá um link para confirmar a conta e definir a própria senha.</AlertDescription></Alert>}
+    {params.status === "saved" && <Alert><ShieldCheck /><AlertTitle>Usuário atualizado</AlertTitle><AlertDescription>As alterações foram salvas e registradas na auditoria.</AlertDescription></Alert>}
+    {params.status === "cancelled" && <Alert><ShieldCheck /><AlertTitle>Convite cancelado</AlertTitle><AlertDescription>A conta pendente e seus vínculos provisórios foram removidos, e a ação foi auditada.</AlertDescription></Alert>}
     {params.status === "invalid" && <Alert variant="destructive"><AlertTitle>Dados inválidos</AlertTitle><AlertDescription>{params.message ?? "Informe nome e ao menos um papel."}</AlertDescription></Alert>}
     {(params.status === "error" || params.status === "forbidden" || data.error) && <Alert variant="destructive"><AlertTitle>Administração indisponível</AlertTitle><AlertDescription>{params.message ?? data.error ?? "A operação não pôde ser concluída."}</AlertDescription></Alert>}
 
-    {data.canManage && <Card><CardHeader><CardTitle className="flex items-center gap-2"><UserPlus className="size-5 text-primary" />Convidar usuário</CardTitle><CardDescription>O convite é enviado pelo Supabase Auth. Não crie ou compartilhe senhas temporárias.</CardDescription></CardHeader><CardContent><form action={inviteUser} className="grid gap-5 lg:grid-cols-3"><Field name="fullName" label="Nome completo" required /><Field name="email" label="E-mail individual" type="email" required /><ProfessionalSelect professionals={data.professionals} /><div className="lg:col-span-3"><RoleFields selected={["reception"]} /></div><div className="lg:col-span-3"><Button><UserPlus />Enviar convite</Button></div></form></CardContent></Card>}
+    {data.canManage && <Card><CardHeader><CardTitle className="flex items-center gap-2"><UserPlus className="size-5 text-primary" />Convidar usuário</CardTitle><CardDescription>O convite é enviado pelo Supabase Auth. Não crie ou compartilhe senhas temporárias.</CardDescription></CardHeader><CardContent><form action={inviteUser} className="grid gap-5 lg:grid-cols-3"><Field id="invite-full-name" name="fullName" label="Nome completo" required /><Field id="invite-email" name="email" label="E-mail individual" type="email" required /><ProfessionalSelect id="invite-professional" professionals={data.professionals} /><div className="lg:col-span-3"><RoleSelector selected={["reception"]} namePrefix="invite" /></div><div className="lg:col-span-3"><Button><UserPlus />Enviar convite</Button></div></form></CardContent></Card>}
 
-    {data.canManage && <section className="space-y-4"><div className="flex items-center gap-2"><UsersRound className="size-5 text-primary" /><h2 className="text-xl font-semibold">Contas cadastradas</h2><Badge variant="secondary">{data.users.length}</Badge></div>{data.users.length === 0 ? <Card><CardContent className="py-10 text-center text-muted-foreground">Nenhum usuário encontrado.</CardContent></Card> : <div className="grid gap-5 xl:grid-cols-2">{data.users.map((user) => {
-      const self = user.id === data.currentUserId;
-      return <Card key={user.id}><CardHeader><div className="flex flex-wrap items-start justify-between gap-3"><div><CardTitle>{user.fullName || "Nome não informado"}</CardTitle><CardDescription>{user.email}</CardDescription></div><Badge variant={user.active ? "secondary" : "outline"}>{user.active ? "Ativo" : "Inativo"}</Badge></div></CardHeader><CardContent><form action={updateUserAccess} className="space-y-5"><input type="hidden" name="userId" value={user.id} /><div className="grid gap-4 sm:grid-cols-2"><Field name="fullName" label="Nome completo" defaultValue={user.fullName} required /><ProfessionalSelect professionals={data.professionals} selected={user.professionalId} /></div><RoleFields selected={user.roles} lockAdmin={self} /><div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3"><label className="flex items-center gap-2 text-sm font-medium"><input type="checkbox" name="active" defaultChecked={user.active} disabled={self} className="size-4 accent-primary" />Conta ativa</label>{self && <input type="hidden" name="active" value="on" />}<div className="text-xs text-muted-foreground">{user.emailConfirmedAt ? `Confirmado em ${date(user.emailConfirmedAt)}` : "Convite pendente"}{user.lastSignInAt ? ` · último acesso ${date(user.lastSignInAt)}` : ""}</div></div><Button type="submit" variant="outline"><KeyRound />Salvar acesso</Button></form></CardContent></Card>;
-    })}</div>}</section>}
+    {data.canManage && <UsersDirectory users={data.users} professionals={data.professionals} currentUserId={data.currentUserId} />}
   </div>;
 }
 
-function Field({ name, label, type = "text", defaultValue, required }: { name: string; label: string; type?: string; defaultValue?: string; required?: boolean }) { return <div className="space-y-2"><Label htmlFor={`${name}-${defaultValue ?? "new"}`}>{label}</Label><Input id={`${name}-${defaultValue ?? "new"}`} name={name} type={type} defaultValue={defaultValue} required={required} /></div>; }
-function ProfessionalSelect({ professionals, selected }: { professionals: { id: string; name: string; active: boolean }[]; selected?: string | null }) { return <div className="space-y-2"><Label>Vínculo profissional</Label><select name="professionalId" defaultValue={selected ?? ""} className="h-9 w-full rounded-md border bg-transparent px-3 text-sm"><option value="">Sem vínculo profissional</option>{professionals.filter((item) => item.active || item.id === selected).map((item) => <option key={item.id} value={item.id}>{item.name}{item.active ? "" : " (inativo)"}</option>)}</select></div>; }
-function RoleFields({ selected, lockAdmin = false }: { selected: AppRole[]; lockAdmin?: boolean }) { return <fieldset className="space-y-3"><legend className="text-sm font-medium">Papéis de acesso</legend><p className="text-xs text-muted-foreground">Uma conta pode acumular papéis. As permissões efetivas são combinadas e todas as mudanças são auditadas.</p><div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">{APP_ROLES.map((role) => <label key={role} className="flex items-start gap-2 rounded-lg border p-3 text-sm transition-colors hover:bg-muted/40"><input type="checkbox" name="roles" value={role} defaultChecked={selected.includes(role)} disabled={lockAdmin && role === "admin"} className="mt-0.5 size-4 shrink-0 accent-primary" />{lockAdmin && role === "admin" && <input type="hidden" name="roles" value="admin" />}<span className="space-y-1"><span className="block font-medium leading-tight">{ROLE_LABELS[role]}</span><span className="block text-xs leading-relaxed text-muted-foreground">{ROLE_DESCRIPTIONS[role]}</span></span></label>)}</div></fieldset>; }
-function date(value: string) { return format(new Date(value), "dd/MM/yyyy HH:mm", { locale: ptBR }); }
+function Field({ id, name, label, type = "text", required }: { id: string; name: string; label: string; type?: string; required?: boolean }) {
+  return <div className="space-y-2"><Label htmlFor={id}>{label}</Label><Input id={id} name={name} type={type} required={required} /></div>;
+}

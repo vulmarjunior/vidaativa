@@ -35,6 +35,14 @@ export type ManagedUser = {
   bannedUntil: string | null;
 };
 
+export type ManagedUserStatus = "pending" | "active" | "inactive";
+
+export function getManagedUserStatus(user: ManagedUser): ManagedUserStatus {
+  if (!user.emailConfirmedAt && !user.lastSignInAt) return "pending";
+  const banned = user.bannedUntil ? new Date(user.bannedUntil).getTime() > Date.now() : false;
+  return user.active && !banned ? "active" : "inactive";
+}
+
 export type UserAdministrationData = {
   currentUserId: string | null;
   canManage: boolean;

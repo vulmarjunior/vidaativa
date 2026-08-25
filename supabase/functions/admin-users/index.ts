@@ -4,7 +4,7 @@ import { withSupabase } from "@supabase/server";
 const roles = ["admin", "direction", "reception", "billing", "doctor", "physiotherapist", "movement_professional", "support"] as const;
 type AppRole = typeof roles[number];
 type RequestBody = {
-  action?: "list" | "invite" | "update";
+  action?: "list" | "invite" | "update" | "cancel_invite";
   userId?: string;
   email?: string;
   fullName?: string;
@@ -61,6 +61,35 @@ const handler = {
           bannedUntil: user.banned_until ?? null,
         };
       }) });
+    }
+
+    if (body.action === "cancel_invite" && body.userId) {
+      if (body.userId === actorId) {
+        return Response.json({ error: "Você não pode cancelar o próprio acesso." }, { status: 400 });
+      }
+      const { data: targetData, error: targetError } = await ctx.supabaseAdmin.auth.admin.getUserById(body.userId);
+      const target = targetData.user;
+      if (targetError || !target) return Response.json({ error: "Convite não encontrado." }, { status: 404 });
+      if (target.email_confirmed_at || target.last_sign_in_at) {
+        return Response.json({ error: "Contas confirmadas devem ser inativadas, não excluídas." }, { status: 400 });
+      }
+
+      const { error: auditError } = await ctx.supabaseAdmin.from("audit_events").insert({
+        actor_id: actorId,
+        action: "cancel_invite",
+        entity_type: "auth_user",
+        entity_id: body.userId,
+        metadata: { reason: "pending_invitation_cancelled" },
+      });
+      if (auditError) return Response.json({ error: "Não foi possível registrar o cancelamento na auditoria." }, { status: 500 });
+
+      const { error: rolesError } = await ctx.supabaseAdmin.from("profile_roles").delete().eq("user_id", body.userId);
+      if (rolesError) return Response.json({ error: "Não foi possível remover os papéis provisórios." }, { status: 500 });
+      const { error: profileError } = await ctx.supabaseAdmin.from("profiles").delete().eq("user_id", body.userId);
+      if (profileError) return Response.json({ error: "Não foi possível remover o perfil provisório." }, { status: 500 });
+      const { error: deleteError } = await ctx.supabaseAdmin.auth.admin.deleteUser(body.userId);
+      if (deleteError) return Response.json({ error: "O perfil provisório foi removido, mas o convite precisa ser conferido no Auth." }, { status: 500 });
+      return Response.json({ ok: true });
     }
 
     const selectedRoles = [...new Set(body.roles ?? [])].filter((role): role is AppRole => roles.includes(role));

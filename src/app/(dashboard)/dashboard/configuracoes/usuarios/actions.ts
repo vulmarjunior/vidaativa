@@ -23,7 +23,7 @@ async function requireAdmin() {
   return { supabase, actorId: authData.user.id };
 }
 
-function finish(status: "saved" | "invited" | "invalid" | "error" | "forbidden", message?: string): never {
+function finish(status: "saved" | "invited" | "cancelled" | "invalid" | "error" | "forbidden", message?: string): never {
   revalidatePath("/dashboard/configuracoes/usuarios");
   const params = new URLSearchParams({ status });
   if (message) params.set("message", message.slice(0, 180));
@@ -66,4 +66,15 @@ export async function updateUserAccess(formData: FormData) {
     professionalId: parsed.data.professionalId || null,
   } });
   finish(error ? "error" : "saved", error?.message);
+}
+
+export async function cancelPendingInvitation(formData: FormData) {
+  const parsed = z.object({ userId: z.string().uuid() }).safeParse({ userId: formData.get("userId") });
+  if (!parsed.success) finish("invalid", "Convite inválido.");
+  const { supabase, actorId } = await requireAdmin();
+  if (parsed.data.userId === actorId) finish("invalid", "Você não pode cancelar o próprio acesso.");
+  const { error } = await supabase.functions.invoke("admin-users", {
+    body: { action: "cancel_invite", userId: parsed.data.userId },
+  });
+  finish(error ? "error" : "cancelled", error?.message);
 }

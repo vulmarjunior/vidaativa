@@ -90,6 +90,10 @@ Todas as tabelas expostas possuem RLS. A aplicação não concede `DELETE`; alte
 
 A ficha profissional não cria usuário automaticamente. Conselho, UF e número são opcionais em conjunto: ou os três são informados quando aplicáveis, ou permanecem vazios. Conta de acesso e dados financeiros continuam separados.
 
+O segmento de cadastros oferece fallback de carregamento durante navegação, recuperação de exceções inesperadas com nova tentativa e mensagem própria para registros dinâmicos não encontrados. As páginas também mantêm estados vazios, erros esperados de consulta e aviso de consulta sem permissão de alteração.
+
+A administração de contas apresenta usuários em lista compacta com busca, filtros por papel e situação e paginação visual de dez registros. A edição ocorre em painel lateral; descrições dos papéis ficam disponíveis por foco, hover ou toque. A situação diferencia convite pendente, ativo e inativo. Contas confirmadas nunca são excluídas pela interface: são inativadas com histórico preservado. Somente convite sem confirmação e sem login admite cancelamento com confirmação explícita e evento `cancel_invite` em `audit_events`.
+
 Em 2026-08-22, o serviço `Avaliação fisioterapêutica` foi configurado com capacidade `Avaliação`, modalidade `Individual`, `Sala de Fisioterapia` e `Maca de fisioterapia`. Cobrança, preço e profissional não foram presumidos.
 
 ## Catálogos regulatórios importados

@@ -25,6 +25,9 @@ As mudanças relevantes deste projeto são registradas aqui. O formato segue ver
 - Administração de usuários com convites individuais, múltiplos papéis, vínculo profissional, inativação de acesso e definição de senha pelo convidado.
 - Navegação e página inicial personalizadas por espaços de trabalho, combinando os módulos permitidos para todos os papéis ativos da conta.
 - Explicações de escopo junto a cada papel na administração de usuários.
+- Estados acessíveis de carregamento, recuperação de erro inesperado e cadastro não encontrado nas rotas de cadastros estruturantes.
+- Administração compacta de usuários com busca, filtros, edição lateral, papéis explicados sob demanda e situações distintas para convite pendente, ativo e inativo.
+- Cancelamento protegido e auditado de convites nunca confirmados, preservando inativação como única opção para contas confirmadas.
 
 ## [0.1.0] — 2026-08-21
 
