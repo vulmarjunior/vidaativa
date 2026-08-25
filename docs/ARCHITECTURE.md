@@ -6,7 +6,8 @@
 - Server Components por padrão.
 - Supabase Auth com cookies via `@supabase/ssr`.
 - PostgreSQL com RLS em todas as tabelas expostas.
-- Autorização baseada em `profiles.role`, nunca em `user_metadata`.
+- Autorização baseada nas atribuições ativas de `profile_roles`, nunca em `user_metadata`.
+- Navegação organizada em espaços de trabalho por capacidades; múltiplos papéis produzem a união dos módulos visíveis.
 - Sistema single-tenant sem `tenant_id`.
 - Identidade da clínica armazenada em `clinic_settings`.
 - Azul clínico como cor principal e verde terapêutico como secundária.
@@ -18,6 +19,7 @@
 - O proxy usa `getClaims()` para validar sessão.
 - Funções privilegiadas ficam no schema `private` e têm execução concedida explicitamente.
 - Logs de auditoria são somente inserção para usuários autenticados.
+- Ocultar navegação é apenas UX; páginas e ações verificam acesso no servidor e o banco aplica RLS.
 
 ## Pendências de descoberta
 

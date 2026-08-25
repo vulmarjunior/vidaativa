@@ -52,6 +52,8 @@ O cadastro estrutural é organizado nos seguintes núcleos:
 
 `profiles.professional_id` referencia `professionals.id`, mantendo conta de acesso e cadastro profissional como conceitos diferentes.
 
+Uma conta pode acumular vários papéis ativos em `profile_roles`. O vínculo com um profissional permanece separado e não concede papel automaticamente. As políticas deste módulo autorizam pela união dos papéis ativos.
+
 Planos assistenciais, suas versões, seções, itens prescritos, sessões e itens realizados permanecem fora da TASK-002. A futura estrutura deverá referenciar `services`, `professionals` e `activities`, preservar versões e manter atividade prescrita separada da realizada.
 
 ## Integridade e histórico

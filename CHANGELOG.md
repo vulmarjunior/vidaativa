@@ -21,6 +21,10 @@ As mudanças relevantes deste projeto são registradas aqui. O formato segue ver
 - Catálogos oficiais CFM/CME e COFFITO importados com fontes, vigências, códigos aplicáveis e pré-requisitos.
 - Ficha profissional com catálogo filtrado por profissão e fluxo administrativo de registro e conferência do RQE.
 - Consulta de especialidades em gaveta lateral com busca e filtros, substituindo a tabela extensa na página estrutural.
+- Múltiplos papéis por conta individual, com RLS baseada na união das permissões, revogação histórica e auditoria de atribuições.
+- Administração de usuários com convites individuais, múltiplos papéis, vínculo profissional, inativação de acesso e definição de senha pelo convidado.
+- Navegação e página inicial personalizadas por espaços de trabalho, combinando os módulos permitidos para todos os papéis ativos da conta.
+- Explicações de escopo junto a cada papel na administração de usuários.
 
 ## [0.1.0] — 2026-08-21
 

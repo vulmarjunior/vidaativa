@@ -12,7 +12,7 @@ export type ServiceItem = CatalogItem & {
 };
 
 export type CatalogData = {
-  role: string | null;
+  roles: string[];
   professionals: ProfessionalItem[];
   categories: CatalogItem[];
   services: ServiceItem[];
@@ -22,7 +22,7 @@ export type CatalogData = {
 };
 
 export type StructuralCatalogData = {
-  role: string | null;
+  roles: string[];
   professions: CatalogItem[];
   councils: (CatalogItem & { acronym: string })[];
   specialties: SpecialtyCatalogItem[];
@@ -33,7 +33,7 @@ export type StructuralCatalogData = {
 };
 
 export type ServiceConfiguration = {
-  role: string | null;
+  roles: string[];
   service: (ServiceItem & { description: string | null; default_interval_minutes: number }) | null;
   capabilities: CatalogItem[];
   selectedCapabilityIds: string[];
@@ -52,7 +52,7 @@ export type ServiceConfiguration = {
 };
 
 export type ProfessionalConfiguration = {
-  role: string | null;
+  roles: string[];
   professional: ProfessionalItem | null;
   professions: CatalogItem[];
   councils: (CatalogItem & { acronym: string })[];
@@ -70,7 +70,7 @@ export type ProfessionalConfiguration = {
 };
 
 const emptyData: CatalogData = {
-  role: null, professionals: [], categories: [], services: [], rooms: [], resources: [], error: null,
+  roles: [], professionals: [], categories: [], services: [], rooms: [], resources: [], error: null,
 };
 
 export async function getCatalogData(): Promise<CatalogData> {
@@ -79,17 +79,17 @@ export async function getCatalogData(): Promise<CatalogData> {
   const { data: authData } = await supabase.auth.getUser();
   if (!authData.user) return { ...emptyData, error: "Sessão não autenticada." };
 
-  const [profile, professionals, categories, services, rooms, resources] = await Promise.all([
-    supabase.from("profiles").select("role").eq("user_id", authData.user.id).single<{ role: string }>(),
+  const [profileRoles, professionals, categories, services, rooms, resources] = await Promise.all([
+    supabase.from("profile_roles").select("role").eq("user_id", authData.user.id).eq("active", true),
     supabase.from("professionals").select("id,full_name,display_name,email,phone,active").order("full_name"),
     supabase.from("service_categories").select("id,name,active").order("sort_order").order("name"),
     supabase.from("services").select("id,name,active,category_id,default_duration_minutes,default_capacity,service_categories(name)").order("name"),
     supabase.from("rooms").select("id,name,active,capacity,exclusive_use").order("name"),
     supabase.from("resources").select("id,name,active,quantity,exclusive_use").order("name"),
   ]);
-  const firstError = [profile.error, professionals.error, categories.error, services.error, rooms.error, resources.error].find(Boolean);
+  const firstError = [profileRoles.error, professionals.error, categories.error, services.error, rooms.error, resources.error].find(Boolean);
   return {
-    role: profile.data?.role ?? null,
+    roles: (profileRoles.data ?? []).map((item) => item.role),
     professionals: (professionals.data ?? []).map((item) => ({ ...item, name: item.full_name })) as ProfessionalItem[],
     categories: (categories.data ?? []) as CatalogItem[],
     services: (services.data ?? []) as unknown as ServiceItem[],
@@ -104,15 +104,15 @@ async function getAuthenticatedCatalogClient() {
   const supabase = await createClient();
   const { data: authData } = await supabase.auth.getUser();
   if (!authData.user) return null;
-  const { data: profile } = await supabase.from("profiles").select("role").eq("user_id", authData.user.id).single<{ role: string }>();
-  return { supabase, role: profile?.role ?? null };
+  const { data: profileRoles } = await supabase.from("profile_roles").select("role").eq("user_id", authData.user.id).eq("active", true);
+  return { supabase, roles: (profileRoles ?? []).map((item) => item.role) };
 }
 
 export async function getStructuralCatalogData(): Promise<StructuralCatalogData> {
   const context = await getAuthenticatedCatalogClient();
-  const empty: StructuralCatalogData = { role: null, professions: [], councils: [], specialties: [], qualifications: [], activityCategories: [], activities: [], error: null };
+  const empty: StructuralCatalogData = { roles: [], professions: [], councils: [], specialties: [], qualifications: [], activityCategories: [], activities: [], error: null };
   if (!context) return { ...empty, error: "Sessão não autenticada." };
-  const { supabase, role } = context;
+  const { supabase, roles } = context;
   const [professions, councils, specialties, specialtyReleases, regulatoryAuthorities, qualifications, activityCategories, activities] = await Promise.all([
     supabase.from("professions").select("id,name,active").order("name"),
     supabase.from("professional_councils").select("id,name,acronym,active").order("acronym"),
@@ -128,7 +128,7 @@ export async function getStructuralCatalogData(): Promise<StructuralCatalogData>
   const authorityMap = new Map((regulatoryAuthorities.data ?? []).map((item) => [item.id, { acronym: item.acronym }]));
   const releaseMap = new Map((specialtyReleases.data ?? []).map((item) => [item.id, { version_label: item.version_label, source_url: item.source_url, regulatory_authorities: authorityMap.get(item.regulatory_authority_id) ?? null }]));
   return {
-    role,
+    roles,
     professions: (professions.data ?? []) as CatalogItem[],
     councils: (councils.data ?? []) as StructuralCatalogData["councils"],
     specialties: (specialties.data ?? []).map((item) => ({ ...item, professions: item.profession_id ? professionMap.get(item.profession_id) ?? null : null, specialty_catalog_releases: item.catalog_release_id ? releaseMap.get(item.catalog_release_id) ?? null : null })) as SpecialtyCatalogItem[],
@@ -141,9 +141,9 @@ export async function getStructuralCatalogData(): Promise<StructuralCatalogData>
 
 export async function getServiceConfiguration(serviceId: string): Promise<ServiceConfiguration> {
   const context = await getAuthenticatedCatalogClient();
-  const empty: ServiceConfiguration = { role: null, service: null, capabilities: [], selectedCapabilityIds: [], deliveryModes: [], selectedDeliveryModeIds: [], billingModes: [], selectedBillingModeIds: [], rooms: [], selectedRoomIds: [], resources: [], selectedResourceIds: [], prices: [], professionals: [], selectedProfessionalIds: [], error: null };
+  const empty: ServiceConfiguration = { roles: [], service: null, capabilities: [], selectedCapabilityIds: [], deliveryModes: [], selectedDeliveryModeIds: [], billingModes: [], selectedBillingModeIds: [], rooms: [], selectedRoomIds: [], resources: [], selectedResourceIds: [], prices: [], professionals: [], selectedProfessionalIds: [], error: null };
   if (!context) return { ...empty, error: "Sessão não autenticada." };
-  const { supabase, role } = context;
+  const { supabase, roles } = context;
   const [service, capabilities, selectedCapabilities, deliveryModes, selectedDeliveryModes, billingModes, selectedBillingModes, rooms, selectedRooms, resources, selectedResources, prices, professionals, selectedProfessionals] = await Promise.all([
     supabase.from("services").select("id,name,active,category_id,description,default_duration_minutes,default_interval_minutes,default_capacity,service_categories(name)").eq("id", serviceId).single(),
     supabase.from("capabilities").select("id,name,active").eq("active", true).order("name"),
@@ -162,7 +162,7 @@ export async function getServiceConfiguration(serviceId: string): Promise<Servic
   ]);
   const errors = [service.error, capabilities.error, selectedCapabilities.error, deliveryModes.error, selectedDeliveryModes.error, billingModes.error, selectedBillingModes.error, rooms.error, selectedRooms.error, resources.error, selectedResources.error, prices.error, professionals.error, selectedProfessionals.error];
   return {
-    role,
+    roles,
     service: service.data as unknown as ServiceConfiguration["service"],
     capabilities: (capabilities.data ?? []) as CatalogItem[], selectedCapabilityIds: (selectedCapabilities.data ?? []).map((item) => item.capability_id),
     deliveryModes: (deliveryModes.data ?? []) as CatalogItem[], selectedDeliveryModeIds: (selectedDeliveryModes.data ?? []).map((item) => item.delivery_mode_id),
@@ -177,9 +177,9 @@ export async function getServiceConfiguration(serviceId: string): Promise<Servic
 
 export async function getProfessionalConfiguration(professionalId: string): Promise<ProfessionalConfiguration> {
   const context = await getAuthenticatedCatalogClient();
-  const empty: ProfessionalConfiguration = { role: null, professional: null, professions: [], councils: [], states: [], registrations: [], specialties: [], selectedSpecialtyIds: [], specialtyPrerequisites: [], specialtyRegistrations: [], qualifications: [], assignedQualifications: [], services: [], assignedServices: [], error: null };
+  const empty: ProfessionalConfiguration = { roles: [], professional: null, professions: [], councils: [], states: [], registrations: [], specialties: [], selectedSpecialtyIds: [], specialtyPrerequisites: [], specialtyRegistrations: [], qualifications: [], assignedQualifications: [], services: [], assignedServices: [], error: null };
   if (!context) return { ...empty, error: "Sessão não autenticada." };
-  const { supabase, role } = context;
+  const { supabase, roles } = context;
   const [professional, professions, councils, states, registrations, specialties, specialtyReleases, regulatoryAuthorities, selectedSpecialties, specialtyPrerequisites, specialtyRegistrations, qualifications, assignedQualifications, services, assignedServices] = await Promise.all([
     supabase.from("professionals").select("id,full_name,display_name,email,phone,active").eq("id", professionalId).single(),
     supabase.from("professions").select("id,name,active").eq("active", true).order("name"),
@@ -202,7 +202,7 @@ export async function getProfessionalConfiguration(professionalId: string): Prom
   const professionalAuthorityMap = new Map((regulatoryAuthorities.data ?? []).map((item) => [item.id, { acronym: item.acronym }]));
   const professionalReleaseMap = new Map((specialtyReleases.data ?? []).map((item) => [item.id, { version_label: item.version_label, source_url: item.source_url, regulatory_authorities: professionalAuthorityMap.get(item.regulatory_authority_id) ?? null }]));
   return {
-    role,
+    roles,
     professional: professional.data ? ({ ...professional.data, name: professional.data.full_name } as ProfessionalItem) : null,
     professions: (professions.data ?? []) as CatalogItem[],
     councils: (councils.data ?? []) as ProfessionalConfiguration["councils"],

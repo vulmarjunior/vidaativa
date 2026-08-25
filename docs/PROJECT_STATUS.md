@@ -1,6 +1,6 @@
 # Estado atual do projeto
 
-Atualizado em: 2026-08-23
+Atualizado em: 2026-08-24
 Versão atual: 0.1.0 — fundação  
 Fase do PRD: Etapa 1 — fundação e cadastros estruturantes  
 Tarefa ativa: `TASK-002-profissionais-servicos-recursos.md`  
@@ -17,6 +17,14 @@ O modelo incremental de regulação profissional também foi aprovado e implemen
 Os catálogos oficiais foram importados e normalizados no remoto: CFM/CME com 55 especialidades e 62 áreas; COFFITO com 16 especialidades e sete áreas atuais/históricas. A ficha profissional filtra por profissão, protege pré-requisitos e oferece registro pendente e conferência administrativa de RQE. As seis migrations estão alinhadas e o catálogo estrutural foi verificado no navegador.
 
 A consulta estrutural dos 140 registros foi compactada em uma gaveta lateral pesquisável, evitando que a lista completa domine a página de habilitações.
+
+O modelo de autorização agora aceita múltiplos papéis ativos por conta individual. A migration incremental preserva o papel existente, move a fonte de verdade para `profile_roles`, aplica a união de permissões nas políticas RLS e audita atribuição, revogação e reativação. Reconstrução completa e testes transacionais no ambiente isolado foram aprovados; a interface administrativa de usuários permanece para tarefa futura.
+
+A migration de múltiplos papéis foi aplicada ao Supabase remoto em 2026-08-24. As sete migrations locais e remotas estão alinhadas, o lint remoto passou sem erros e os advisors mantêm apenas o alerta já conhecido de proteção contra senhas vazadas desabilitada.
+
+A interface de administração de usuários está disponível com convites individuais, múltiplos papéis, vínculo profissional, ativação/inativação e definição de senha pelo convidado. A oitava migration foi aplicada ao remoto e a Edge Function `admin-users` está ativa com JWT obrigatório. As oito migrations estão alinhadas e o lint remoto passou sem erros.
+
+A arquitetura de navegação foi reorganizada em espaços de trabalho orientados por capacidades. O menu e a página inicial agora combinam os módulos dos papéis ativos, enquanto páginas dinâmicas também verificam acesso no servidor. A matriz inicial e a separação entre navegação, autorização de ações e RLS estão registradas na ADR-004.
 
 ## Estado funcional
 
@@ -36,6 +44,8 @@ A consulta estrutural dos 140 registros foi compactada em uma gaveta lateral pes
 | Auditoria | Fundação no banco | Sem tela funcional de consulta |
 
 ## Validação mais recente
+
+Em 2026-08-24, a navegação modular passou em lint, TypeScript e build. No navegador autenticado como administrador, foram exibidos apenas Início, Auditoria e Administração do sistema; módulos clínicos e financeiros ficaram ocultos. O acesso direto a Prontuários sem papel médico redirecionou com aviso de falta de permissão e não houve erro no console. A validação completa com papéis não administrativos continua pendente.
 
 Em 2026-08-23:
 
@@ -57,6 +67,7 @@ Em 2026-08-23:
 - Verificar a ficha dinâmica e o RQE no navegador quando houver dados reais da profissional.
 - Concluir acessibilidade e estados de carregamento, vazio, erro e permissão; responsividade básica já verificada.
 - Definir o escopo das interfaces de formulários e termos.
+- Validar a interface de usuários autenticada no navegador e criar as contas individuais de teste da matriz de autorização.
 
 ## Próxima ação recomendada
 

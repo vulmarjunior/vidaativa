@@ -15,7 +15,7 @@ export default async function ServiceConfigurationPage({ params, searchParams }:
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const data = await getServiceConfiguration(id);
   if (!data.service && !data.error) notFound();
-  const canManage = data.role === "admin";
+  const canManage = data.roles.includes("admin");
   return <div className="mx-auto max-w-7xl space-y-6">
     <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-sm font-medium text-primary">Configuração do serviço</p><h1 className="text-3xl font-semibold tracking-tight">{data.service?.name ?? "Serviço"}</h1><p className="mt-1 text-muted-foreground">{data.service?.service_categories?.name} · {data.service?.default_duration_minutes} minutos · capacidade {data.service?.default_capacity}</p></div><Button asChild variant="outline"><Link href="/dashboard/cadastros"><ArrowLeft />Voltar</Link></Button></div>
     {query.status === "saved" && <Alert><AlertTitle>Configuração atualizada</AlertTitle><AlertDescription>A associação foi salva e auditada.</AlertDescription></Alert>}

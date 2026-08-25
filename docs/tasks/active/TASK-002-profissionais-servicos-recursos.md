@@ -1,6 +1,6 @@
 # TASK-002 — Profissionais, serviços, salas e recursos
 
-Status: Pronta para desenvolvimento — próxima tarefa da sessão  
+Status: Em desenvolvimento
 Prioridade: P0  
 Módulo: Profissionais, serviços e recursos  
 Dependências: fundação de perfis e auditoria  
@@ -77,6 +77,9 @@ Na ausência de resposta, modele de forma normalizada e configurável, sem inven
 - [x] importar e versionar catálogos oficiais CFM/CME e COFFITO;
 - [x] integrar profissão, pré-requisitos e fluxo de verificação de RQE à ficha profissional;
 - [ ] testar autorização e auditoria;
+- [x] permitir múltiplos papéis ativos por conta, com migração do papel existente, RLS e auditoria;
+- [x] implementar interface administrativa de usuários e convites, incluindo vínculo opcional ao profissional;
+- [x] documentar espaços de trabalho por capacidades e implementar navegação dinâmica para múltiplos papéis;
 - [ ] verificar interface;
 
 ## Arquivos previstos
@@ -88,7 +91,7 @@ Na ausência de resposta, modele de forma normalizada e configurável, sem inven
 
 ## Dependência externa
 
-O Supabase remoto está vinculado e contém as seis migrations, incluindo o modelo regulatório, a importação dos catálogos e a normalização das profissões canônicas. Respostas da descoberta operacional ainda serão necessárias antes de consolidar regras específicas de vínculos, serviços, recursos e remuneração.
+O Supabase remoto está vinculado e contém as oito migrations, incluindo o modelo regulatório, os catálogos oficiais, múltiplos papéis e as proteções da administração de usuários. A Edge Function `admin-users` está publicada. Respostas da descoberta operacional ainda serão necessárias antes de consolidar regras específicas de vínculos, serviços, recursos e remuneração.
 
 ## Onde continuar
 
@@ -103,7 +106,7 @@ Retomar nesta ordem:
 
 Catálogos oficiais só devem ser atualizados por nova migration incremental, vinculada a release e fonte oficial conferida. Não presumir cobrança, preço, remuneração ou habilitação profissional para o serviço `Avaliação fisioterapêutica`.
 
-## Pendências ao encerrar 2026-08-23
+## Pendências ao encerrar 2026-08-24
 
 - dados reais da profissional para validar a ficha dinâmica e o fluxo completo de RQE;
 - contas individuais de teste para recepção, financeiro, médico e fisioterapeuta;
@@ -112,8 +115,23 @@ Catálogos oficiais só devem ser atualizados por nova migration incremental, vi
 - revisão de acessibilidade e estados alternativos; responsividade básica das rotas principais verificada em 390 px;
 - decisão e implementação das interfaces de formulários e termos;
 - proteção contra senhas vazadas no Supabase Auth, condicionada à disponibilidade do plano.
+- validar amanhã a navegação modular com contas individuais não administrativas e confirmar a união de módulos em uma conta com dois papéis.
 
 ## Validações
+
+- em 2026-08-24, a migration de múltiplos papéis reconstruiu as sete migrations desde zero no ambiente isolado;
+- em 2026-08-24, testes transacionais confirmaram dois papéis ativos na mesma conta, união de permissões, revogação parcial sem perda do papel restante e eventos `assign`/`revoke` em `audit_events`; rollback executado;
+- em 2026-08-24, uma conta não administrativa foi bloqueada pela RLS ao tentar atribuir `admin` a si própria;
+- em 2026-08-24, lint e advisors locais não encontraram erros ou alertas após a migration; lint, TypeScript e build da aplicação passaram;
+- em 2026-08-24, o dry-run remoto não acessou o banco porque a sessão da CLI expirou com `401 Unauthorized`; nenhuma migration foi aplicada remotamente;
+- após reautenticação em 2026-08-24, o novo dry-run listou somente `20260824223735_allow_multiple_roles_per_user.sql`; a migration foi aplicada ao remoto com sucesso;
+- histórico remoto confirmado com sete migrations alinhadas; lint remoto sem erros e advisors com apenas o alerta já conhecido `auth_leaked_password_protection`;
+- em 2026-08-24, a interface `/dashboard/configuracoes/usuarios`, a Edge Function `admin-users` e o fluxo `/auth/set-password` foram implementados;
+- reconstrução local com oito migrations, proteção do último administrador, auditoria de perfis, bundle da Edge Function e convite fictício com dois papéis foram aprovados; dados fictícios removidos por `db reset`;
+- `npm run lint`, `npm run typecheck`, `npm run build`, lint e advisors locais passaram após a administração de usuários;
+- a verificação com `agent-browser` não pôde ser executada porque o binário não está instalado no ambiente; o build e o teste funcional da Edge Function passaram;
+- após reautenticação, a oitava migration foi aplicada e `admin-users` publicada no remoto em estado `ACTIVE`, versão 1 e com `verify_jwt = true`;
+- o endpoint remoto passou de `404` para `401` sem sessão, confirmando publicação e proteção; oito migrations alinhadas, lint remoto sem erros e somente o advisor conhecido de senhas vazadas;
 
 - em 2026-08-23, `/dashboard/cadastros`, `/dashboard/cadastros/estruturas` e `/dashboard/cadastros/servicos/[id]` carregaram autenticadas como administrador, sem alerta funcional; a mensagem transitória de indisponibilidade não se repetiu e nenhuma correção foi necessária;
 - em 2026-08-23, as três rotas administrativas principais foram verificadas em viewport de 390 px, sem rolagem horizontal;

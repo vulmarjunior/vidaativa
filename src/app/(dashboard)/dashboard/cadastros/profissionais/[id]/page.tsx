@@ -16,7 +16,7 @@ export default async function ProfessionalPage({ params, searchParams }: { param
   const data = await getProfessionalConfiguration(id);
   if (!data.professional && !data.error) notFound();
   const professional = data.professional;
-  const canManage = data.role === "admin";
+  const canManage = data.roles.includes("admin");
   const updateAction = updateProfessional.bind(null, id);
   const registrationAction = addProfessionalRegistration.bind(null, id);
   const specialtyAction = toggleProfessionalSpecialty.bind(null, id);

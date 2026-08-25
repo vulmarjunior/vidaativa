@@ -12,7 +12,7 @@ Fornecer aplicação Next.js, autenticação, sessão SSR, perfis, autorização
 - cliente Supabase para navegador e servidor;
 - atualização de sessão no proxy;
 - login por e-mail e senha;
-- perfis e papéis iniciais no banco;
+- perfis e múltiplos papéis por conta no banco, com atribuições históricas em `profile_roles`;
 - políticas RLS iniciais;
 - tabela base de auditoria;
 - dashboard e navegação responsivos;
@@ -26,10 +26,17 @@ Fornecer aplicação Next.js, autenticação, sessão SSR, perfis, autorização
 - índice de `clinic_settings.updated_by` adicionado após recomendação de desempenho.
 - primeiro administrador criado, confirmado e registrado na auditoria.
 - login administrativo confirmado como funcional pelo usuário.
+- múltiplos papéis reconstruídos e testados no ambiente isolado; união de permissões, revogação parcial, bloqueio de autoatribuição e auditoria aprovados.
+- interface administrativa de usuários com convite por e-mail, múltiplos papéis, vínculo profissional e ativação/inativação;
+- seletor de papéis apresenta descrição do escopo de cada função e informa que permissões acumuladas são combinadas e auditadas;
+- navegação lateral e página inicial são personalizadas pela união dos espaços de trabalho habilitados pelos papéis ativos;
+- matriz inicial de espaços e limites registrada na ADR-004; administrador técnico não recebe acesso clínico automaticamente;
+- Edge Function `admin-users`, autenticada como usuário, valida o papel administrativo antes de usar o cliente privilegiado do Supabase Auth;
+- fluxo público de aceite do convite e definição da senha pelo próprio usuário;
+- proteção de banco impede inativar ou revogar o último administrador ativo.
 
 ## Não validado
 
-- login real;
 - expiração e renovação de sessão;
 - matriz completa de autorização;
 - fluxos de recuperação de senha e encerramento de sessão;
@@ -38,6 +45,6 @@ Fornecer aplicação Next.js, autenticação, sessão SSR, perfis, autorização
 ## Pendências
 
 - testar cada papel previsto no PRD;
-- implementar gestão de usuários e convites;
+- validar no navegador os convites e a matriz completa com contas individuais de teste;
 - definir MFA para perfis privilegiados.
 - habilitar proteção contra senhas vazadas no Auth.

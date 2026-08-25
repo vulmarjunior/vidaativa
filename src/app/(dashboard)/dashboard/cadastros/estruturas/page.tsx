@@ -13,7 +13,7 @@ import { SpecialtyCatalogDrawer } from "./specialty-catalog-drawer";
 
 export default async function StructuresPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
   const [data, params] = await Promise.all([getStructuralCatalogData(), searchParams]);
-  const canManage = data.role === "admin";
+  const canManage = data.roles.includes("admin");
   return <div className="mx-auto max-w-7xl space-y-6">
     <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-sm font-medium text-primary">Cadastros estruturantes</p><h1 className="text-3xl font-semibold tracking-tight">Habilitações e atividades</h1><p className="mt-1 text-muted-foreground">Vocabulários reutilizáveis, sem dados pessoais de profissionais.</p></div><Button asChild variant="outline"><Link href="/dashboard/cadastros"><ArrowLeft />Voltar aos cadastros</Link></Button></div>
     {params.status === "saved" && <Alert><AlertTitle>Cadastro atualizado</AlertTitle><AlertDescription>A alteração foi salva.</AlertDescription></Alert>}

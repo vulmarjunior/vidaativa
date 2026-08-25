@@ -13,7 +13,7 @@ import { createCategory, createProfessional, createResource, createRoom, createS
 
 export default async function CatalogPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
   const [data, params] = await Promise.all([getCatalogData(), searchParams]);
-  const canManage = data.role === "admin";
+  const canManage = data.roles.includes("admin");
   return <div className="mx-auto max-w-7xl space-y-6">
     <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-sm font-medium text-primary">Cadastros estruturantes</p><h1 className="text-3xl font-semibold tracking-tight">Profissionais, serviços e recursos</h1><p className="mt-1 text-muted-foreground">Catálogo operacional reutilizado pela agenda e pelos futuros planos assistenciais.</p></div><Button asChild variant="outline"><Link href="/dashboard/cadastros/estruturas"><Settings2 />Habilitações e atividades</Link></Button></div>
     {params.status === "saved" && <Alert><AlertTitle>Cadastro atualizado</AlertTitle><AlertDescription>A alteração foi salva e registrada na auditoria.</AlertDescription></Alert>}

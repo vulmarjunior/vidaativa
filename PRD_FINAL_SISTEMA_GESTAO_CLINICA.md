@@ -165,6 +165,7 @@ O sistema é o produto principal. O site institucional é acessório e compartil
 - **RN-AUTH-004:** recepção e financeiro não podem consultar anamnese, diagnóstico ou evolução.
 - **RN-AUTH-005:** toda autorização deve ser garantida por RLS e validação no servidor.
 - **RN-AUTH-006:** exceções de acesso devem ser temporárias, justificadas e auditadas.
+- **RN-AUTH-007:** uma conta individual pode acumular múltiplos perfis; a autorização efetiva é a união das permissões dos perfis ativos, e toda atribuição, revogação ou reativação deve ser auditada.
 
 ---
 
@@ -179,12 +180,15 @@ O sistema é o produto principal. O site institucional é acessório e compartil
 - **RF-AUTH-005 [P0]:** vincular usuário a perfil, profissional e unidade, quando houver.
 - **RF-AUTH-006 [P0]:** revogar sessões.
 - **RF-AUTH-007 [P0]:** auditar login, falhas relevantes e mudanças de permissão.
+- **RF-AUTH-008 [P0]:** oferecer interface administrativa para convidar usuários, ativar ou inativar contas, vincular profissional e atribuir múltiplos perfis.
+- **RF-AUTH-009 [P0]:** apresentar navegação e página inicial por espaços de trabalho habilitados pelos papéis ativos, combinando permissões quando a conta possuir mais de um papel.
 
 ### Critérios de aceite
 
 - **CA-AUTH-001:** usuário inativo não consegue autenticar.
 - **CA-AUTH-002:** o frontend não consegue contornar uma restrição aplicada no banco.
 - **CA-AUTH-003:** mudança de perfil registra responsável, data e valores anterior e posterior.
+- **CA-AUTH-004:** administrador gerencia contas e múltiplos perfis sem acessar diretamente o banco ou compartilhar senhas temporárias.
 
 ---
 
@@ -757,7 +761,7 @@ docs/
 
 ### Identidade
 
-`users`, `profiles`, `roles`, `permissions`, `professional_profiles`, `professional_registrations`, `units`
+`users`, `profiles`, `profile_roles`, `roles`, `permissions`, `professional_profiles`, `professional_registrations`, `units`
 
 ### Pacientes e operação
 
@@ -998,6 +1002,7 @@ As referências regulatórias devem ser verificadas novamente antes de cada inte
 | DEC-012 | Novos serviços compatíveis usam capacidades existentes sem alteração de código; comportamento inédito exige capacidade reutilizável e revisão do PRD. |
 | DEC-013 | Fisioterapia, musculação, fortalecimento e modalidades futuras compartilham um núcleo versionado de planos, fichas, atividades e execução por sessão. |
 | DEC-014 | Estética não invasiva, incluindo massagens e drenagem linfática, integra o escopo operacional do MVP. |
+| DEC-015 | A aplicação será única e organizada em espaços de trabalho orientados por capacidades; papéis habilitam módulos e múltiplos papéis produzem a união dos acessos. |
 
 ---
 

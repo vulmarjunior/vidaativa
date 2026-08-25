@@ -12,8 +12,11 @@ async function requireAdmin() {
   const supabase = await createClient();
   const { data: authData, error: authError } = await supabase.auth.getUser();
   if (authError || !authData.user) redirect("/login");
-  const { data: profile } = await supabase.from("profiles").select("role,active").eq("user_id", authData.user.id).single<{ role: string; active: boolean }>();
-  if (!profile?.active || profile.role !== "admin") redirect("/dashboard/cadastros?status=forbidden");
+  const [{ data: profile }, { data: adminRole }] = await Promise.all([
+    supabase.from("profiles").select("active").eq("user_id", authData.user.id).single<{ active: boolean }>(),
+    supabase.from("profile_roles").select("role").eq("user_id", authData.user.id).eq("role", "admin").eq("active", true).maybeSingle(),
+  ]);
+  if (!profile?.active || !adminRole) redirect("/dashboard/cadastros?status=forbidden");
   return { supabase, userId: authData.user.id };
 }
 
