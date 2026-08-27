@@ -84,6 +84,11 @@ Na ausência de resposta, modele de forma normalizada e configurável, sem inven
 - [x] documentar espaços de trabalho por capacidades e implementar navegação dinâmica para múltiplos papéis;
 - [ ] verificar interface;
 - [x] adicionar estados de rota para carregamento, erro inesperado com nova tentativa e cadastro dinâmico não encontrado;
+- [x] corrigir o login para não rejeitar senhas legadas antes da autenticação e mapear erros seguros do Supabase Auth;
+- [x] adicionar recuperação de senha sem recriar ou excluir a conta existente;
+- [x] tratar o retorno PKCE da recuperação em Route Handler SSR, com troca explícita do código e persistência da sessão em cookies;
+- [x] distinguir falhas seguras na atualização da senha em vez de ocultar todos os códigos do Auth;
+- [ ] publicar e validar o convite nominal em português no Supabase hospedado;
 
 ## Arquivos previstos
 
@@ -101,11 +106,13 @@ O Supabase remoto está vinculado e contém as oito migrations, incluindo o mode
 Retomar nesta ordem:
 
 1. não alterar `sge-mordomo-db` (porta 5432); usar apenas o Supabase remoto ou o ambiente isolado `clinica-vida-ativa-task002-validation` (Postgres na porta 54322);
-2. disponibilizar contas individuais de teste para recepção, financeiro, médico e fisioterapeuta; completar no navegador a matriz de autorização e confirmar os eventos correspondentes em `audit_events`;
-3. quando houver dados reais da profissional, cadastrar profissão, conselho, UF e número de registro e validar visualmente a associação de especialidade/área, pré-requisitos e RQE, sem inventar informações;
-4. concluir a revisão de acessibilidade e dos estados de carregamento, vazio, erro e permissão; a checagem responsiva básica em 390 px já passou nas três rotas administrativas principais;
-5. obter da clínica os modelos reais e definir o escopo restante das interfaces de formulários e termos;
-6. repetir reconstrução, RLS e auditoria no ambiente isolado quando o Docker Desktop estiver disponível e executar a validação final antes de encerrar a tarefa.
+2. após o limite de solicitações do Auth expirar, solicitar exatamente um novo e-mail de recuperação, abrir o link uma única vez, definir uma senha forte diferente da anterior e repetir o login sem recriar os usuários;
+3. publicar a atualização de `admin-users` e o template nominal em português usando uma conta com privilégio no projeto; no plano Free de projetos novos, configurar SMTP próprio antes de personalizar o template hospedado;
+4. disponibilizar contas individuais de teste para recepção, financeiro, médico e fisioterapeuta; completar no navegador a matriz de autorização e confirmar os eventos correspondentes em `audit_events`;
+5. quando houver dados reais da profissional, cadastrar profissão, conselho, UF e número de registro e validar visualmente a associação de especialidade/área, pré-requisitos e RQE, sem inventar informações;
+6. concluir a revisão de acessibilidade e dos estados de carregamento, vazio, erro e permissão; a checagem responsiva básica em 390 px já passou nas três rotas administrativas principais;
+7. obter da clínica os modelos reais e definir o escopo restante das interfaces de formulários e termos;
+8. repetir reconstrução, RLS e auditoria no ambiente isolado quando o Docker Desktop estiver disponível e executar a validação final antes de encerrar a tarefa.
 
 Em 2026-08-25, os estados de rota de carregamento, erro inesperado e cadastro não encontrado foram implementados no segmento de cadastros. Continuar a revisão pelos formulários, ações sensíveis e navegação por teclado; a validação visual desses novos estados ainda depende de ambiente configurado e navegador autenticado.
 
@@ -133,6 +140,13 @@ Catálogos oficiais só devem ser atualizados por nova migration incremental, vi
 - em 2026-08-25, a tela autenticada foi validada no Chrome em desktop e viewport de 390 px, sem rolagem horizontal ou overlay; busca, filtros, painel de edição e confirmação de cancelamento foram exercitados sem submeter alterações;
 - em 2026-08-25, uma primeira publicação de `admin-users` foi bloqueada com `403`; após autenticação com conta autorizada, o deploy passou e a função foi confirmada em versão 2, estado `ACTIVE` e `verify_jwt = true`;
 - em 2026-08-25, o usuário confirmou que o cancelamento de convite pendente funcionou pela interface no ambiente remoto; a conferência isolada do evento `cancel_invite` em `audit_events` continua pendente de registro explícito;
+- em 2026-08-26, o cancelamento foi considerado confirmado pelo fluxo: a versão 2 interrompe a operação se a inserção de `cancel_invite` falhar e o usuário confirmou o sucesso do cancelamento; uma tentativa adicional de consulta SQL foi bloqueada com `403` porque a conta autenticada na CLI não possui privilégio no projeto;
+- em 2026-08-26, o login deixou de exigir oito caracteres antes de chamar o Auth, preservando acesso de senhas legadas aceitas pelo projeto; mensagens passaram a distinguir conta não confirmada, inativa, limite de tentativas e senha fraca;
+- em 2026-08-26, nova tentativa chegou ao Auth e retornou `invalid_credentials`; `.env.local` e o projeto vinculado coincidem, o provedor de e-mail está habilitado e foi adicionada recuperação segura de senha, validada no Chrome sem enviar mensagem;
+- em 2026-08-26, o e-mail de recuperação chegou, porém os campos permaneceram bloqueados porque o retorno `?code=` não era trocado por sessão; a primeira correção no cliente continuou aguardando, então o fluxo foi movido para `/auth/recovery`, que executa `exchangeCodeForSession` no servidor, persiste cookies e apresenta erro próprio para código expirado ou consumido;
+- em 2026-08-26, a primeira atualização de senha foi recusada pelo Auth e a mensagem genérica impediu identificar o motivo; o formulário passou a mapear `same_password`, `weak_password`, reautenticação, sessão expirada, conta inativa e limite de tentativas;
+- em 2026-08-26, após as tentativas de recuperação, o Auth retornou limite de solicitações; nenhuma nova tentativa foi feita e o fluxo deve ser retomado somente após a janela do provedor expirar;
+- em 2026-08-26, o template nominal em português e os metadados `first_name` e `clinic_name` foram preparados localmente; publicação remota pendente por falta de privilégio da conta usada na CLI e pela necessidade de SMTP próprio para personalização em projetos Free novos;
 
 - em 2026-08-24, a migration de múltiplos papéis reconstruiu as sete migrations desde zero no ambiente isolado;
 - em 2026-08-24, testes transacionais confirmaram dois papéis ativos na mesma conta, união de permissões, revogação parcial sem perda do papel restante e eventos `assign`/`revoke` em `audit_events`; rollback executado;

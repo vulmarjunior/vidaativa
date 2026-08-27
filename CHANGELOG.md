@@ -28,6 +28,14 @@ As mudanças relevantes deste projeto são registradas aqui. O formato segue ver
 - Estados acessíveis de carregamento, recuperação de erro inesperado e cadastro não encontrado nas rotas de cadastros estruturantes.
 - Administração compacta de usuários com busca, filtros, edição lateral, papéis explicados sob demanda e situações distintas para convite pendente, ativo e inativo.
 - Cancelamento protegido e auditado de convites nunca confirmados, preservando inativação como única opção para contas confirmadas.
+- Convite nominal em português preparado com primeiro nome e identidade da Clínica Vida Ativa.
+- Recuperação de acesso por e-mail para contas que não reconhecem mais a senha cadastrada.
+
+### Corrigido
+
+- Login deixou de rejeitar senhas legadas de 6–7 caracteres antes de consultar o Supabase Auth e passou a apresentar mensagens seguras por código de erro.
+- Recuperação de senha passa a trocar corretamente o código PKCE por sessão antes de habilitar os campos.
+- Alteração de senha passa a orientar por código seguro do Auth quando a nova credencial é recusada.
 
 ## [0.1.0] — 2026-08-21
 
