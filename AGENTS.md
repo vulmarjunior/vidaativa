@@ -10,6 +10,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # Contrato de desenvolvimento — Clínica Vida Ativa
 
+> **Protocolo OIKOS:** perfil `core`; manifesto `.oikos/project.yaml`; rotina `docs/operacao/ROTINA_SESSAO.md`; gatilhos `vida on/off`.
+
 Este arquivo é a primeira leitura obrigatória de qualquer agente ou pessoa que trabalhe no repositório. O sistema é personalizado, single-tenant e destinado exclusivamente à Clínica Vida Ativa.
 
 ## Ordem obrigatória de retomada
