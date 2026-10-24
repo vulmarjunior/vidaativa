@@ -1,10 +1,32 @@
 # Estado atual do projeto
 
-Atualizado em: 2026-08-26
+Atualizado em: 2026-10-24 (suspensão registrada; conteúdo técnico de 2026-08-26)
 Versão atual: 0.1.0 — fundação  
 Fase do PRD: Etapa 1 — fundação e cadastros estruturantes  
-Tarefa ativa: `TASK-002-profissionais-servicos-recursos.md`  
+Tarefa ativa: nenhuma — desenvolvimento suspenso em 2026-10-24  
 Última entrega: `TASK-001-fundacao-aplicacao.md`
+
+## Suspensão temporária
+
+O desenvolvimento está suspenso desde 2026-10-24, com retomada prevista em
+breve. A suspensão é operacional: não é arquivamento, não altera o estado
+funcional descrito abaixo e não invalida o protocolo OIKOS já adotado.
+
+Na retomada, o primeiro passo é concluir as pendências de infraestrutura de
+autenticação registradas em
+`docs/sessions/2026-08-26-login-e-convite-personalizado.md`:
+
+- publicar a Edge Function `admin-users` no projeto Supabase hospedado, com
+  conta autorizada;
+- configurar o template de convite em português no Supabase hospedado, ou SMTP
+  próprio caso o plano Free restrinja a personalização.
+
+O código do fix de login e recuperação de acesso já está em `master` (commit
+`b89a337`, 24/10/2026); falta apenas a configuração no ambiente hospedado.
+
+A frente de desenvolvimento em andamento é
+`TASK-002-profissionais-servicos-recursos.md`, retomada a partir do estado
+descrito abaixo.
 
 ## Resumo executivo
 
