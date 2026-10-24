@@ -1,6 +1,6 @@
 # Estado atual do projeto
 
-Atualizado em: 2026-08-25
+Atualizado em: 2026-08-26
 Versão atual: 0.1.0 — fundação  
 Fase do PRD: Etapa 1 — fundação e cadastros estruturantes  
 Tarefa ativa: `TASK-002-profissionais-servicos-recursos.md`  
@@ -55,6 +55,16 @@ Ainda em 2026-08-25, a nova administração compacta de usuários passou em lint
 
 O cancelamento remoto de convite pendente foi confirmado funcionalmente pelo usuário em 2026-08-25. Resta conferir e registrar explicitamente o evento correspondente em `audit_events`.
 
+Em 2026-08-26, o usuário confirmou novamente que o cancelamento foi concluído. Como a Edge Function versão 2 só conclui a operação após inserir `cancel_invite`, o evento é considerado confirmado pelo fluxo transacional; a consulta SQL isolada não pôde ser repetida porque a conta usada na CLI recebeu `403` por falta de privilégio no projeto. O login também foi corrigido para não rejeitar localmente senhas legadas de 6–7 caracteres antes de consultar o Supabase Auth. O convite personalizado em português foi preparado localmente com o primeiro nome do destinatário; a publicação da nova Edge Function e a configuração do template hospedado dependem de uma conta com acesso ao projeto e, no plano Free atual, de SMTP próprio para permitir personalização.
+
+Após nova tentativa, o Auth respondeu `invalid_credentials`. Foi confirmado que `.env.local` aponta ao mesmo projeto vinculado e que o provedor de e-mail está habilitado com confirmação obrigatória. Como não há chave administrativa no ambiente local e a conta da CLI não possui privilégio no projeto, foi adicionado um fluxo seguro de recuperação por e-mail que preserva perfil, papéis e histórico. A rota e sua navegação a partir do login foram validadas no Chrome sem submissão de endereço.
+
+O primeiro link de recuperação chegou com `code` PKCE, mas a página ainda não trocava esse código por sessão e manteve os campos desabilitados. Após constatar que a troca no componente cliente permanecia aguardando, o fluxo foi corrigido pelo padrão SSR: `/auth/recovery` executa `exchangeCodeForSession` no servidor, persiste os cookies e redireciona para a página limpa. Links já emitidos para `/auth/set-password?code=` são encaminhados automaticamente.
+
+Na primeira tentativa de atualização, o Auth recusou a nova senha, mas a interface ainda ocultava o código. O formulário passou a distinguir senha igual à anterior, senha fraca, reautenticação necessária, sessão expirada, conta inativa e limite de tentativas, mantendo a sessão válida para correção imediata quando aplicável.
+
+Após as tentativas de recuperação, o Auth passou a responder que muitas solicitações foram realizadas. O teste foi interrompido para não prolongar o bloqueio. A retomada deve aguardar a janela do provedor e usar apenas um novo e-mail, um link aberto uma vez e uma senha forte diferente da anterior.
+
 Em 2026-08-24, a navegação modular passou em lint, TypeScript e build. No navegador autenticado como administrador, foram exibidos apenas Início, Auditoria e Administração do sistema; módulos clínicos e financeiros ficaram ocultos. O acesso direto a Prontuários sem papel médico redirecionou com aviso de falta de permissão e não houve erro no console. A validação completa com papéis não administrativos continua pendente.
 
 Em 2026-08-23:
@@ -78,12 +88,15 @@ Em 2026-08-23:
 - Concluir acessibilidade e estados de carregamento, vazio, erro e permissão; responsividade básica já verificada.
 - Definir o escopo das interfaces de formulários e termos.
 - Validar a interface de usuários autenticada no navegador e criar as contas individuais de teste da matriz de autorização.
-- Validar o cancelamento auditado de um convite estritamente fictício usando a Edge Function `admin-users` versão 2 já publicada.
+- Publicar a atualização de `admin-users` e configurar o template personalizado do convite com uma conta que tenha acesso ao projeto; projetos Free novos exigem SMTP próprio para personalização do e-mail.
+- Repetir o login das contas criadas após a correção que deixou de bloquear senhas legadas antes de consultar o Auth.
+- Usar a recuperação de acesso para definir nova senha nas contas que retornam `invalid_credentials`, preservando os usuários existentes.
+- Aguardar o limite de solicitações do Auth expirar antes de pedir outro e-mail de recuperação; não repetir solicitações durante a janela de bloqueio.
 
 ## Próxima ação recomendada
 
-Continuar `TASK-002`: validar o cancelamento auditado de um convite fictício com `admin-users` versão 2. Depois, usar contas não administrativas para concluir autorização/auditoria por perfil. A ficha de especialidades e RQE continua aguardando dados reais da profissional.
+Continuar `TASK-002`: após o limite do Auth expirar, solicitar um único link de recuperação, definir uma senha forte nova e validar o login da conta existente. Em seguida, publicar o convite personalizado e usar contas não administrativas para concluir autorização/auditoria por perfil. A ficha de especialidades e RQE continua aguardando dados reais da profissional.
 
 ## Onde continuar
 
-Leia `docs/tasks/active/TASK-002-profissionais-servicos-recursos.md` e siga a ordem registrada em `Onde continuar`. O ambiente de validação é `clinica-vida-ativa-task002-validation` (Postgres na porta 54322); nunca usar ou alterar `sge-mordomo-db` (porta 5432). Retomar pelos testes de autorização/auditoria com contas não administrativas. Se essas contas ainda não estiverem disponíveis, concluir acessibilidade e estados alternativos sem inventar dados; a ficha regulatória continua aguardando dados reais.
+Leia `docs/tasks/active/TASK-002-profissionais-servicos-recursos.md` e siga a ordem registrada em `Onde continuar`. O ambiente de validação é `clinica-vida-ativa-task002-validation` (Postgres na porta 54322); nunca usar ou alterar `sge-mordomo-db` (porta 5432). Primeiro retome a recuperação somente depois de expirar o limite do Auth; depois prossiga com convite personalizado e testes de autorização/auditoria. A ficha regulatória continua aguardando dados reais.

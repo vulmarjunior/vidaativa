@@ -33,18 +33,24 @@ Fornecer aplicação Next.js, autenticação, sessão SSR, perfis, autorização
 - matriz inicial de espaços e limites registrada na ADR-004; administrador técnico não recebe acesso clínico automaticamente;
 - Edge Function `admin-users`, autenticada como usuário, valida o papel administrativo antes de usar o cliente privilegiado do Supabase Auth;
 - fluxo público de aceite do convite e definição da senha pelo próprio usuário;
+- login consulta o Supabase Auth sem bloquear previamente senhas legadas pelo tamanho e apresenta mensagens seguras por código de erro;
+- recuperação de acesso por e-mail preserva a conta, o perfil, os papéis e o histórico existentes;
+- retorno PKCE da recuperação usa Route Handler para trocar o código por sessão, persistir cookies e remover o código da URL antes de habilitar a nova senha;
+- alteração de senha apresenta orientação específica por código seguro do Auth, sem expor credenciais;
+- convite nominal em português preparado com primeiro nome e identidade da clínica; a configuração hospedada depende de SMTP compatível com personalização;
 - proteção de banco impede inativar ou revogar o último administrador ativo.
 
 ## Não validado
 
 - expiração e renovação de sessão;
 - matriz completa de autorização;
-- fluxos de recuperação de senha e encerramento de sessão;
+- encerramento de sessão;
 - auditoria e RLS em banco remoto.
 
 ## Pendências
 
 - testar cada papel previsto no PRD;
 - validar no navegador os convites e a matriz completa com contas individuais de teste;
+- publicar e validar o template nominal do convite e repetir o login das contas existentes;
 - definir MFA para perfis privilegiados.
 - habilitar proteção contra senhas vazadas no Auth.

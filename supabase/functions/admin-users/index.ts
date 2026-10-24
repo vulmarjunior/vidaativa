@@ -101,8 +101,9 @@ const handler = {
     if (body.action === "invite") {
       const email = body.email?.trim().toLowerCase() ?? "";
       if (!email.includes("@")) return Response.json({ error: "E-mail inválido." }, { status: 400 });
+      const firstName = fullName.split(/\s+/)[0] ?? fullName;
       const { data: invited, error: inviteError } = await ctx.supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-        data: { full_name: fullName },
+        data: { full_name: fullName, first_name: firstName, clinic_name: "Clínica Vida Ativa" },
         redirectTo: body.redirectTo,
       });
       if (inviteError || !invited.user) {

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="pt-BR">
+  <body style="margin:0;background:#f4f7f8;font-family:Arial,sans-serif;color:#17323d">
+    <div style="max-width:600px;margin:0 auto;padding:32px 20px">
+      <div style="background:#ffffff;border:1px solid #dce7ea;border-radius:16px;padding:32px">
+        <p style="margin:0 0 20px;font-size:14px;color:#52707b">Clínica Vida Ativa</p>
+        <h1 style="margin:0 0 16px;font-size:24px;line-height:1.3">Olá, {{ .Data.first_name }}.</h1>
+        <p style="margin:0 0 16px;line-height:1.6">
+          Foi criado um acesso individual para você no sistema da Clínica Vida Ativa.
+        </p>
+        <p style="margin:0 0 24px;line-height:1.6">
+          Use o botão abaixo para confirmar seu e-mail e definir sua senha. O link é pessoal e não deve ser compartilhado.
+        </p>
+        <p style="margin:0 0 24px">
+          <a href="{{ .ConfirmationURL }}" style="display:inline-block;border-radius:10px;background:#087f8c;color:#ffffff;padding:12px 20px;text-decoration:none;font-weight:700">
+            Confirmar acesso
+          </a>
+        </p>
+        <p style="margin:0;font-size:13px;line-height:1.5;color:#617982">
+          Se você não esperava este convite, ignore esta mensagem e avise a administração da clínica.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
