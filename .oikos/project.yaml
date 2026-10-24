@@ -1,0 +1,45 @@
+schema_version: 2
+
+project:
+  name: Clínica Vida Ativa
+  slug: vidaativa
+  category: profissional
+  lifecycle: development
+  repository: https://github.com/vulmarjunior/vidaativa
+  default_branch: master
+  protocol_profile: core
+
+sources:
+  tasks:
+    type: directory
+    path: docs/tasks/active/
+  master_plan: docs/ROADMAP.md
+  session_routine: docs/operacao/ROTINA_SESSAO.md
+  changelog: CHANGELOG.md
+  architecture: docs/ARCHITECTURE.md
+  decisions: docs/decisions/
+
+deployment:
+  state: not_published
+  provider: null
+  url: null
+  account_alias: null
+  verified_at: "2026-10-23"
+
+database:
+  state: development
+  provider: postgresql
+  project_alias: vidaativa
+  account_alias: null
+  environment: development
+  verified_at: "2026-10-23"
+
+memory:
+  enabled: false
+  workspace: null
+  project: null
+
+oikos:
+  protocol_version: "0.2"
+  adopted_at: "2026-10-23"
+  last_audit_at: "2026-10-23"
